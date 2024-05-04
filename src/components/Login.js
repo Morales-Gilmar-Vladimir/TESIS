@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
 import axios from 'axios';
 import styles from '../styles/styles';
 
@@ -7,6 +8,14 @@ const Login = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      setError('');
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   const handleLogin = async () => {
     try {
@@ -17,11 +26,17 @@ const Login = ({ navigation }) => {
       setEmail('');
       setPassword('');
 
+      // Guarda el estado de autenticación en AsyncStorage
+      await AsyncStorage.setItem('isLoggedIn', 'true');
+
+      // Redirige a la pantalla de inicio una vez que el inicio de sesión sea exitoso
+      navigation.navigate('Home');
+
       Alert.alert(
         'LOGIN',
         'Inicio de sesión Exitoso',
         [
-            { text: 'OK', onPress: () => navigation.navigate('Home') }
+            { text: 'OK' }
         ]
       );
 
@@ -34,7 +49,6 @@ const Login = ({ navigation }) => {
   const handleRegistroPress = () => {
     navigation.navigate('Registro');
   };
-
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
