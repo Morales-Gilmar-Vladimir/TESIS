@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import Login from './components/Login';
 import Registro from './components/Registro';
+import Home from './screens/HomeScreen'
 
 const Main = () => {
   return (
@@ -11,6 +12,9 @@ const Main = () => {
       </View>
       <View style={styles.page}>
         <Login />
+      </View>
+      <View style={styles.page}>
+        <Home />
       </View>
     </ScrollView>
   );

@@ -8,10 +8,10 @@ const HomeScreen = ({ navigation }) => {
   const [publicaciones, setPublicaciones] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [imagenAmpliada, setImagenAmpliada] = useState('');
+  const [showMenu, setShowMenu] = useState(false);
 
   const fetchPublicaciones = async () => {
     try {
-      // Realiza la llamada a la API para obtener las publicaciones
       const response = await axios.get('https://ropdat.onrender.com/api/publicaciones');
       setPublicaciones(response.data);
     } catch (error) {
@@ -21,9 +21,7 @@ const HomeScreen = ({ navigation }) => {
 
   const handleLogout = async () => {
     try {
-      // Elimina el estado de autenticación guardado en AsyncStorage
       await AsyncStorage.removeItem('userToken');
-      // Redirige al inicio de sesión
       navigation.navigate('Login');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
@@ -36,22 +34,18 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const handleLike = () => {
-    // Implementa la lógica para guardar el me gusta
     Alert.alert('¡Me gusta!', 'Has dado me gusta a esta imagen.');
   };
 
   const handleDislike = () => {
-    // Implementa la lógica para guardar el no me gusta
     Alert.alert('¡No me gusta!', 'Has dado no me gusta a esta imagen.');
   };
 
   const handleReport = () => {
-    // Implementa la lógica para reportar la imagen
     Alert.alert('¡Imagen reportada!', 'Has reportado esta imagen.');
   };
 
   const handleSave = () => {
-    // Implementa la lógica para guardar la imagen en el dispositivo
     Alert.alert('¡Imagen guardada!', 'Has guardado esta imagen en tu dispositivo.');
   };
 
@@ -59,21 +53,48 @@ const HomeScreen = ({ navigation }) => {
     fetchPublicaciones();
   }, []);
 
+  // Función para navegar a la pantalla de perfil
+  const goToProfile = () => {
+    navigation.navigate('Perfil');
+  };
+
+  // Función para mostrar u ocultar el menú lateral
+  const toggleMenu = () => {
+    setShowMenu(!showMenu);
+  };
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <TouchableOpacity onPress={handleLogout}>
-        <Text style={styles.logoutButton}>Cerrar sesión</Text>
-      </TouchableOpacity>
-      <View style={styles.gridContainer}>
-        {publicaciones.map((publicacion, index) => (
-          <TouchableOpacity key={index} style={styles.gridItem} onPress={() => handleImagePress(publicacion.secure_url)}>
-            <Image
-              source={{ uri: publicacion.secure_url }}
-              style={styles.image}
-            />
+    <View style={styles.container}>
+      {/* Contenido principal */}
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.gridContainer}>
+          {publicaciones.map((publicacion, index) => (
+            <TouchableOpacity key={index} style={styles.gridItem} onPress={() => handleImagePress(publicacion.imagen.secure_url)}>
+              <Image
+                source={{ uri: publicacion.imagen.secure_url }}
+                style={styles.image}
+              />
+              <Text style={styles.imageName}>{publicacion._id}</Text>
+              <Text style={styles.imageDescription}>{publicacion.descripcion}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+      {/* Botones en posición fija */}
+      <View style={styles.fixedButtonsContainer}>
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
+            <Icon name="home" size={24} color="black" />
           </TouchableOpacity>
-        ))}
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publish')}>
+            <Icon name="plus-square" size={24} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Perfil')}>
+            <Icon name="user" size={24} color="black" />
+          </TouchableOpacity>
+        </View>
       </View>
+      {/* Modal para mostrar imagen ampliada */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -99,46 +120,53 @@ const HomeScreen = ({ navigation }) => {
               <Icon name="exclamation-circle" size={30} color="black" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.button} onPress={handleSave}>
-              <Icon name="save" size={30} color="black" />
+              <Icon name="star" size={30} color="black" />
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    flexDirection: 'row',
+    position: 'relative',
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    paddingTop: 60, // Ajusta el padding para dejar espacio para la barra lateral
   },
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center',
-    margin: 0,
-    auto: 'margin',
+    justifyContent: 'space-between',
+    paddingHorizontal: 5,
   },
   gridItem: {
-    width: 230,
-    marginBottom: 40,
+    width: '48%',
+    marginBottom: 20,
     borderRadius: 15,
     overflow: 'hidden',
-    cursor: 'zoom-in',
     backgroundColor: 'lightgray',
-    margin: 10,
-    alignSelf: 'flex-start',
   },
   image: {
     width: '100%',
-    aspectRatio: 1,
+    aspectRatio: 0.5,
     borderRadius: 15,
   },
-  logoutButton: {
-    alignSelf: 'flex-end',
-    marginVertical: 10,
-    color: 'red',
+  imageName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginLeft: 10,
+  },
+  imageDescription: {
+    fontSize: 14,
+    marginTop: 5,
+    marginLeft: 10,
   },
   modalContainer: {
     flex: 1,
@@ -163,9 +191,20 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   button: {
-    padding: 10,
-    borderRadius: 50,
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 25,
     backgroundColor: 'lightblue',
+  },
+  fixedButtonsContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',
+    zIndex: 100,
   },
 });
 

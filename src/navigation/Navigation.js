@@ -1,11 +1,13 @@
+
 import React, { useState, useEffect } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Pressable, Text } from 'react-native';
+import { Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Login from '../components/Login';
 import Registro from '../components/Registro';
 import HomeScreen from '../screens/HomeScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 import styles from '../styles/styles';
 
 const Stack = createStackNavigator();
@@ -20,8 +22,8 @@ const Navigation = () => {
 
   const checkLoginStatus = async () => {
     try {
-      const userToken = await AsyncStorage.getItem('userToken');
-      setIsLoggedIn(userToken !== null);
+      const userToken = await AsyncStorage.getItem('token'); // Obtener el token de AsyncStorage
+      setIsLoggedIn(!!userToken); // Verificar si el token es válido
     } catch (error) {
       console.error('Error al verificar el estado de la sesión:', error);
     }
@@ -29,8 +31,8 @@ const Navigation = () => {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('userToken');
-      setIsLoggedIn(false);
+      await AsyncStorage.removeItem('token'); // Eliminar el token de AsyncStorage
+      setIsLoggedIn(false); // Actualizar el estado de isLoggedIn
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }
@@ -43,23 +45,35 @@ const Navigation = () => {
       <Tab.Screen
         name="Home"
         component={HomeScreen}
-        options={({ navigation }) => ({
+        options={({ navigation, route }) => ({
           tabBarButton: () => (
-            <Pressable
+            <Text
               style={styles.tabBarButton}
               onPress={() => {
-                if (isLoggedIn) {
+                if (route.name !== 'Home') {
                   navigation.navigate('Home');
-                } else {
-                  navigation.navigate('Login');
                 }
               }}
             >
-              <Text style={styles.tabBarButtonText}> </Text>
-            </Pressable>
+            </Text>
           ),
         })}
       />
+      {isLoggedIn && (
+        <Tab.Screen
+          name="Perfil"
+          component={ProfileScreen}
+          options={({ navigation }) => ({
+            tabBarButton: () => (
+              <Text
+                style={styles.tabBarButton}
+                onPress={() => navigation.navigate('Perfil')}
+              >
+              </Text>
+            ),
+          })}
+        />
+      )}
     </Tab.Navigator>
   );
 };

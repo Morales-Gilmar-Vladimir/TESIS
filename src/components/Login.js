@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import styles from '../styles/styles';
 
@@ -9,29 +9,24 @@ const Login = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('blur', () => {
-      setError('');
-    });
-
-    return unsubscribe;
-  }, [navigation]);
-
   const handleLogin = async () => {
     try {
       const url = 'https://ropdat.onrender.com/api/login'; 
       const response = await axios.post(url, { email, password });
-      console.log('Respuesta del servidor:', response.data);
       
+      // Obtener el token de autenticación del servidor
+      const token = response.data.token;
+  
+      // Guardar el token en AsyncStorage
+      await AsyncStorage.setItem('token', token);
+  
+      // Limpiar los campos de correo electrónico y contraseña
       setEmail('');
       setPassword('');
-
-      // Guarda el estado de autenticación en AsyncStorage
-      await AsyncStorage.setItem('isLoggedIn', 'true');
-
-      // Redirige a la pantalla de inicio una vez que el inicio de sesión sea exitoso
+  
+      // Redirigir a la pantalla de inicio una vez que el inicio de sesión sea exitoso
       navigation.navigate('Home');
-
+  
       Alert.alert(
         'LOGIN',
         'Inicio de sesión Exitoso',
@@ -39,7 +34,7 @@ const Login = ({ navigation }) => {
             { text: 'OK' }
         ]
       );
-
+  
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
       setError('Correo electrónico o contraseña incorrectos');
