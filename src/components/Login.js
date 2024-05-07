@@ -15,18 +15,22 @@ const Login = ({ navigation }) => {
       const response = await axios.post(url, { email, password });
       
       // Obtener el token de autenticación del servidor
-      const token = response.data.token;
+      const { token, _id } = response.data;
   
-      // Guardar el token en AsyncStorage
+      // Guardar el token y el ID del usuario en AsyncStorage
       await AsyncStorage.setItem('token', token);
-  
+      await AsyncStorage.setItem('_id', _id);
+      
       // Limpiar los campos de correo electrónico y contraseña
       setEmail('');
       setPassword('');
-  
+    
+      // Limpiar el estado de error
+      setError('');
+    
       // Redirigir a la pantalla de inicio una vez que el inicio de sesión sea exitoso
       navigation.navigate('Home');
-  
+    
       Alert.alert(
         'LOGIN',
         'Inicio de sesión Exitoso',
@@ -34,12 +38,13 @@ const Login = ({ navigation }) => {
             { text: 'OK' }
         ]
       );
-  
+    
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
       setError('Correo electrónico o contraseña incorrectos');
     }
   };
+  
 
   const handleRegistroPress = () => {
     navigation.navigate('Registro');
