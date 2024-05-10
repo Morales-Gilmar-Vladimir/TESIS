@@ -40,8 +40,38 @@ const Navigation = () => {
 
   return (
     <Tab.Navigator initialRouteName="Login">
-      <Tab.Screen name="Login" component={Login} />
-      <Tab.Screen name="Registro" component={Registro} />
+      <Tab.Screen name="Login" 
+      component={Login}
+      options={({ navigation, route }) => ({
+        tabBarButton: () => (
+          <Text
+            style={styles.tabBarButton}
+            onPress={() => {
+              if (route.name !== 'Login') {
+                navigation.navigate('Login');
+              }
+            }}
+            >
+            </Text>
+          ),
+        })}
+      />
+      <Tab.Screen name="Registro" 
+        component={Registro} 
+        options={({ navigation, route }) => ({
+          tabBarButton: () => (
+            <Text
+              style={styles.tabBarButton}
+              onPress={() => {
+                if (route.name !== 'Registro') {
+                  navigation.navigate('Registro');
+                }
+              }}
+              >
+              </Text>
+            ),
+          })}
+        />
       <Tab.Screen
         name="Home"
         component={HomeScreen}

@@ -1,18 +1,40 @@
-// Importa los módulos necesarios
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Registro from './components/Registro';
 import Login from './components/Login';
 import HomeScreen from './screens/HomeScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createStackNavigator();
 
 const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    checkLoginStatus();
+  }, []);
+
+  const checkLoginStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      setIsLoggedIn(token !== null);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error al verificar el estado de inicio de sesión:', error);
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return null; // Puedes mostrar un indicador de carga aquí mientras verificamos el estado de inicio de sesión
+  }
+
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName={isLoggedIn ? 'Home' : 'Login'}>
         <Stack.Screen
           name="Registro"
           component={Registro}
@@ -39,4 +61,3 @@ const App = () => {
 };
 
 export default App;
-

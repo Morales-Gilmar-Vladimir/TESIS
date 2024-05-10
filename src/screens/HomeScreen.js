@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Image, Button, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
+import { BackHandler, View, Text, ScrollView, Image, Button, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -9,6 +9,7 @@ const HomeScreen = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [imagenAmpliada, setImagenAmpliada] = useState('');
   const [showMenu, setShowMenu] = useState(false);
+  const [backPressCount, setBackPressCount] = useState(0);
 
   const fetchPublicaciones = async () => {
     try {
@@ -16,15 +17,6 @@ const HomeScreen = ({ navigation }) => {
       setPublicaciones(response.data);
     } catch (error) {
       console.error('Error al obtener las publicaciones:', error);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await AsyncStorage.removeItem('userToken');
-      navigation.navigate('Login');
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
     }
   };
 
@@ -53,15 +45,27 @@ const HomeScreen = ({ navigation }) => {
     fetchPublicaciones();
   }, []);
 
-  // Función para navegar a la pantalla de perfil
-  const goToProfile = () => {
-    navigation.navigate('Perfil');
-  };
 
-  // Función para mostrar u ocultar el menú lateral
-  const toggleMenu = () => {
-    setShowMenu(!showMenu);
-  };
+  useEffect(() => {
+    const handleBackPress = () => {
+      if (navigation.isFocused()) {
+        if (backPressCount < 1) {
+          setBackPressCount(1);
+          Alert.alert('Salir', '¿Estás seguro de que quieres salir de la aplicación?', [
+            { text: 'Cancelar', onPress: () => setBackPressCount(0), style: 'cancel' },
+            { text: 'Salir', onPress: () => BackHandler.exitApp() },
+          ]);
+          return true;
+        }
+      }
+      return false;
+    };
+  
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+  
+    return () => backHandler.remove();
+  }, [backPressCount, navigation]);
+  
 
   return (
     <View style={styles.container}>
@@ -128,6 +132,7 @@ const HomeScreen = ({ navigation }) => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

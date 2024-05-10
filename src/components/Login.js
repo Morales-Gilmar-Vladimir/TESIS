@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -8,6 +8,22 @@ const Login = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    checkAuthToken();
+  }, []);
+
+  const checkAuthToken = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        // Si hay un token almacenado, redirige a la pantalla de inicio automáticamente
+        navigation.navigate('Home');
+      }
+    } catch (error) {
+      console.error('Error al verificar el token de autenticación:', error);
+    }
+  };
 
   const handleLogin = async () => {
     try {
