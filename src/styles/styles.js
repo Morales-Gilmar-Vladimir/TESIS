@@ -105,6 +105,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 5,
   },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 5,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkedIcon: {
+    width: 12,
+    height: 12,
+    backgroundColor: 'blue', // Cambia el color como desees
+    borderRadius: 3,
+  },
+  checkboxLabel: {
+    marginLeft: 10,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  termsLink: {
+    color: 'blue',
+    textDecorationLine: 'underline',
+    marginTop: 5,
+  },
 });
 
 export default styles;

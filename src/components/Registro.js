@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Linking, Alert } from 'react-native'; // Agrega Alert
 import axios from 'axios';
 import styles from '../styles/styles';
 
@@ -8,15 +8,24 @@ const Registro = ({ navigation }) => {
   const [apellido, setApellido] = useState('');
   const [email, setEmail] = useState('');
   const [fechaNacimiento, setFechaNacimiento] = useState('');
-  const [genero, setGenero] = useState('');
   const [password, setPassword] = useState('');
+  const [terminosAceptados, setTerminosAceptados] = useState(false);
 
   const handleRegister = async () => {
-    // Validar campos obligatorios
-    if (!nombre || !apellido || !email || !fechaNacimiento || !genero || !password) {
+    // Validar campos obligatorios y aceptación de términos
+    if (!nombre || !apellido || !email || !fechaNacimiento || !password) {
       Alert.alert(
         'Campos incompletos',
         'Por favor, completa todos los campos para registrarte.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    if (!terminosAceptados) { // Si los términos no están aceptados
+      Alert.alert(
+        'Términos y condiciones',
+        'Debes aceptar los términos y condiciones para registrarte.',
         [{ text: 'OK' }]
       );
       return;
@@ -26,7 +35,7 @@ const Registro = ({ navigation }) => {
     if (!validateEmail(email)) {
       Alert.alert(
         'Formato de correo incorrecto',
-        'Por favor, introduce un correo electrónico válido con un dominio conocido (ej. gmail.com, hotmail.com, etc.).',
+        'Por favor, introduce un correo electrónico válido con un dominio conocido (ej. gmail.com o hotmail.com).',
         [{ text: 'OK' }]
       );
       return;
@@ -39,7 +48,6 @@ const Registro = ({ navigation }) => {
         apellido,
         email,
         fechaNacimiento,
-        genero,
         password,
       });
       console.log('Respuesta del servidor:', respuesta.data);
@@ -48,8 +56,8 @@ const Registro = ({ navigation }) => {
       setApellido('');
       setEmail('');
       setFechaNacimiento('');
-      setGenero('');
       setPassword('');
+      setTerminosAceptados(false);
 
       Alert.alert(
         'Registro exitoso',
@@ -83,6 +91,12 @@ const Registro = ({ navigation }) => {
     const knownDomains = ['gmail.com', 'hotmail.com'];
     const domain = email.split('@')[1];
     return emailRegex.test(email) && knownDomains.includes(domain);
+  };
+
+  const handleTermsPress = () => {
+    // Aquí defines la URL de tus términos y condiciones
+    const termsUrl = 'https://tusitio.com/terminosycondiciones';
+    Linking.openURL(termsUrl);
   };
 
   return (
@@ -119,13 +133,6 @@ const Registro = ({ navigation }) => {
           keyboardType="numeric"
           maxLength={10}
         />
-        <Text style={styles.label}>Género</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Género"
-          value={genero}
-          onChangeText={setGenero}
-        />
         <Text style={styles.label}>Contraseña</Text>
         <TextInput
           style={styles.input}
@@ -134,6 +141,17 @@ const Registro = ({ navigation }) => {
           value={password}
           onChangeText={setPassword}
         />
+        <View style={styles.checkboxContainer}>
+          <TouchableOpacity onPress={() => setTerminosAceptados(!terminosAceptados)}>
+            <View style={styles.checkbox}>
+              {terminosAceptados && <View style={styles.checkedIcon} />}
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.checkboxLabel}>
+            Acepto los términos y condiciones{'\n'}
+            <Text style={styles.termsLink} onPress={handleTermsPress}>Leer términos y condiciones{'\n'}</Text>
+          </Text>
+        </View>
         <TouchableOpacity style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>Registrarse</Text>
         </TouchableOpacity>
