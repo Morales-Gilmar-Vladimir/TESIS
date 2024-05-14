@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, BackHandler } from 'react-native';
+import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, BackHandler, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 
 const ProfileScreen = ({ navigation }) => {
   const [userData, setUserData] = useState(null);
-  const [userPosts, setUserPosts] = useState([]);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [publicaciones, setPublicaciones] = useState([]);
+  const [selectedImageUri, setSelectedImageUri] = useState(null);
   const [loadingImage, setLoadingImage] = useState(false);
-  const [base64Image, setBase64Image] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [imagenAmpliada, setImagenAmpliada] = useState('');
+  const [selectedPost, setSelectedPost] = useState(null);
 
   useEffect(() => {
     fetchUserData();
@@ -29,66 +30,6 @@ const ProfileScreen = ({ navigation }) => {
     return () => backHandler.remove();
   }, [navigation]);
 
-  const handleLogout = async () => {
-    try {
-      // Eliminar todos los datos relacionados con el usuario del AsyncStorage
-      await AsyncStorage.removeItem('token');
-      await AsyncStorage.removeItem('_id');
-      // Limpiar el estado de los datos de usuario en el componente
-      setUserData(null);
-      setUserPosts([]);
-      setSelectedImage(null);
-      setBase64Image(null);
-      // Navegar a la pantalla de inicio de sesión
-      navigation.navigate('Login');
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-    }
-  };
-
-  const selectProfileImage = async () => {
-    try {
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (permissionResult.granted === false) {
-        alert('Se requiere permiso para acceder a la galería de fotos');
-        return;
-      }
-
-      setLoadingImage(true);
-
-      const pickerResult = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-
-      setLoadingImage(false);
-
-      if (!pickerResult.cancelled && pickerResult.uri) {
-        console.log('URI de la imagen seleccionada:', pickerResult.uri);
-        console.log('Imagen seleccionada:', pickerResult); // Agregamos esta línea para mostrar más detalles sobre la imagen seleccionada
-        convertToBase64(pickerResult.uri);
-        setSelectedImage(pickerResult.uri); // Esta línea se mantiene para mostrar la imagen seleccionada en la interfaz
-      }
-    } catch (error) {
-      setLoadingImage(false);
-      console.error('Error al seleccionar la imagen:', error);
-    }
-  };
-
-  const confirmProfileImage = async () => {
-    try {
-      if (selectedImage) {
-        // Lógica para confirmar la imagen como foto de perfil...
-        console.log('Imagen confirmada como foto de perfil:', selectedImage);
-      } else {
-        console.log('No se ha seleccionado ninguna imagen como foto de perfil');
-      }
-    } catch (error) {
-      console.error('Error al confirmar la imagen como foto de perfil:', error);
-    }
-  };
 
   const fetchUserData = async () => {
     try {
@@ -97,45 +38,147 @@ const ProfileScreen = ({ navigation }) => {
         console.error('Token de usuario no encontrado en AsyncStorage');
         return;
       }
-
+  
       const userId = await AsyncStorage.getItem('_id');
       if (!userId) {
         console.error('ID de usuario no encontrado en AsyncStorage');
         return;
       }
-
+  
       const responseUserData = await axios.get(`https://ropdat.onrender.com/api/usuario/${userId}`, {
         headers: {
           Authorization: `Bearer ${userToken}`
         }
       });
-
+  
       if (!responseUserData || !responseUserData.data || !responseUserData.data.UsuarioBDD) {
         console.error('No se recibieron datos de usuario válidos desde la API');
         return;
       }
-
+  
       const userData = responseUserData.data.UsuarioBDD;
       setUserData(userData);
-
       const userPosts = responseUserData.data.publicacionBDD;
-      setUserPosts(userPosts);
-
-      console.log('Datos del usuario cargados correctamente');
+      setPublicaciones(userPosts);
+  
+      console.log('Datos del usuario y publicaciones cargados correctamente');
     } catch (error) {
       console.error('Error al obtener la información del perfil:', error);
     }
   };
 
-  const convertToBase64 = async (imageUri) => {
+  const selectProfileImage = async () => {
     try {
-      const base64 = await FileSystem.readAsStringAsync(imageUri, { encoding: FileSystem.EncodingType.Base64 });
-      setBase64Image(base64);
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (permissionResult.granted === false) {
+            alert('Se requiere permiso para acceder a la galería de fotos');
+            return;
+        }
+
+        setLoadingImage(true);
+
+        const pickerResult = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        setLoadingImage(false);
+        console.log('Resultado del selector de imágenes:', pickerResult);
+        
+        if (!pickerResult.cancelled && pickerResult.assets.length > 0) {
+            const selectedImageUri = pickerResult.assets[0].uri;
+            console.log('URI de la imagen seleccionada:', selectedImageUri);
+            setSelectedImageUri(selectedImageUri);
+        } else {
+            console.log('No se seleccionó ninguna imagen nueva');
+        }
     } catch (error) {
-      console.error('Error al convertir la imagen a base64:', error);
+        setLoadingImage(false);
+        console.error('Error al seleccionar la imagen:', error.message);
     }
+};
+
+const confirmProfileImage = async () => {
+  console.log('Imagen de perfil confirmada');
+  
+  if (selectedImageUri) {
+    console.log('Actualizando la foto de perfil...');
+    await updateProfileImage(selectedImageUri);
+  } else {
+    console.log('No hay ninguna imagen seleccionada para confirmar');
+  }
+};
+
+  // Función para forzar la actualización del componente
+  const forceUpdate = () => {
+    setSelectedImageUri(null); // Reiniciamos la URI de la imagen seleccionada
+    fetchUserData(); // Volvemos a cargar los datos de usuario para reflejar los cambios
   };
 
+const updateProfileImage = async (imageUri) => {
+  try {
+    const userToken = await AsyncStorage.getItem('token');
+    const userId = await AsyncStorage.getItem('_id');
+
+    const formData = new FormData();
+    formData.append('image', {
+      uri: imageUri,
+      name: `profile_${userId}.jpg`,
+      type: 'image/jpeg',
+    });
+
+    // Actualizar la foto de perfil en la ruta del usuario/id
+    const responseUserById = await axios.put(`https://ropdat.onrender.com/api/usuario/foto/${userId}`, formData, {
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    console.log('Respuesta de la actualización de la foto de perfil en la ruta del usuario/id:', responseUserById.data);
+
+    // Obtener los datos actualizados del usuario después de la actualización
+    console.log('Obteniendo los datos actualizados del usuario...');
+    const responseUserData = await axios.get(`https://ropdat.onrender.com/api/usuario/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
+
+    if (!responseUserData || !responseUserData.data || !responseUserData.data.UsuarioBDD) {
+      console.error('No se recibieron datos de usuario válidos desde la API');
+      return;
+    }
+
+    const userData = responseUserData.data.UsuarioBDD;
+    console.log('Datos actualizados del usuario:', userData);
+    setUserData(userData);
+    forceUpdate();
+  } catch (error) {
+    console.error('Error al actualizar la foto de perfil:', error);
+  }
+};
+
+  const handleImagePress = (url, post) => {
+    setSelectedPost(post);
+    setImagenAmpliada(url);
+    setModalVisible(true);
+  };
+
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('_id');
+      setUserData(null);
+      setPublicaciones([]);
+      setSelectedImageUri(null);
+      navigation.navigate('Login');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.profileContainer}>
@@ -147,52 +190,56 @@ const ProfileScreen = ({ navigation }) => {
         {userData && (
           <>
             <View style={styles.profilePictureContainer}>
-              <TouchableOpacity onPress={selectProfileImage}>
-                {loadingImage ? (
-                  <Text>Cargando imagen...</Text>
-                ) : (
-                  <>
-                    {base64Image ? (
-                      <>
-                        <Image source={{ uri: `data:image/jpeg;base64,${base64Image}` }} style={styles.profilePicture} />
-                        <Text style={styles.imageUriText}>URI: {selectedImage}</Text>
-                      </>
-                    ) : (
-                      <>
-                        {userData && userData.fotoperfil ? (
-                          <Image source={{ uri: userData.fotoperfil.secure_url }} style={styles.profilePicture} />
-                        ) : (
-                          <Icon name="user-circle" size={150} color="#ccc" />
-                        )}
-                      </>
-                    )}
-                  </>
-                )}
-              </TouchableOpacity>
+            <TouchableOpacity onPress={selectProfileImage}>
+              {loadingImage ? (
+                <Text>Cargando imagen...</Text>
+              ) : (
+                <>
+                  {selectedImageUri ? (
+                    <>
+                      <Image source={{ uri: selectedImageUri }} style={styles.profilePicture} />
+                      
+                    </>
+                  ) : (
+                    <>
+                      {userData && userData.fotoperfil ? (
+                        <Image source={{ uri: userData.fotoperfil.secure_url }} style={styles.profilePicture} />
+                      ) : (
+                        <Icon name="user-circle" size={150} color="#ccc" />
+                      )}
+                    </>
+                  )}
+                  {selectedImageUri && (
+                    <TouchableOpacity style={styles.confirmButton} onPress={confirmProfileImage}>
+                      <Text style={styles.confirmButtonText}>Confirmar como foto de perfil</Text>
+                    </TouchableOpacity>
+                  )}
+                </>
+              )}
+            </TouchableOpacity>
             </View>
             <View style={styles.userDataContainer}>
               <Text style={styles.username}>{userData.nombre}</Text>
               <Text style={styles.description}>{userData.descripcion}</Text>
               <View style={styles.statsContainer}>
-                <Text style={styles.stat}>0 publicaciones</Text>
+                <Text style={styles.stat}>{publicaciones.length} publicaciones</Text>
               </View>
             </View>
-            {selectedImage && (
-              <TouchableOpacity style={styles.confirmButton} onPress={confirmProfileImage}>
-                <Text style={styles.confirmButtonText}>Confirmar como foto de perfil</Text>
-              </TouchableOpacity>
-            )}
           </>
         )}
         <View style={styles.postsContainer}>
-          {userPosts.map((post, index) => (
-            <View key={index} style={styles.postItem}>
-              {userData && (
-                <Image source={{ uri: userData.fotoperfil }} style={styles.profilePicture} />
-              )}
-              <Text style={styles.postDescription}>{post.descripcion}</Text>
-            </View>
-          ))}
+          {publicaciones.length > 0 ? (
+            publicaciones.map((publicacion, index) => (
+              <TouchableOpacity key={index} style={styles.gridItem} onPress={() => handleImagePress(publicacion.imagen.secure_url, publicacion)}>
+                <Image
+                  source={{ uri: publicacion.imagen.secure_url }}
+                  style={styles.image}
+                />
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Text>No hay publicaciones</Text>
+          )}
         </View>
       </ScrollView>
       <View style={styles.fixedButtonsContainer}>
@@ -208,6 +255,28 @@ const ProfileScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity onPress={() => setModalVisible(false)}>
+            <Text style={styles.closeButton}>Cerrar</Text>
+          </TouchableOpacity>
+          <Image
+            source={{ uri: imagenAmpliada }}
+            style={styles.ampliada}
+          />
+          {selectedPost && (
+            <View style={styles.postInfoContainer}>
+              <Text style={styles.imageName}>{selectedPost._id}</Text>
+              <Text style={styles.imageDescription}>{selectedPost.descripcion}</Text>
+            </View>
+          )}
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -264,17 +333,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 10,
   },
-  postItem: {
+  gridItem: {
     width: '48%',
     marginBottom: 20,
   },
-  postImage: {
+  image: {
     width: '100%',
     aspectRatio: 1,
     borderRadius: 10,
   },
-  postDescription: {
+  imageName: {
     marginTop: 5,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  imageDescription: {
     fontSize: 16,
   },
   confirmButton: {
@@ -290,18 +363,19 @@ const styles = StyleSheet.create({
   },
   fixedButtonsContainer: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 20,
     left: 0,
     right: 0,
-    backgroundColor: 'lightgray',
-    borderTopWidth: 1,
-    borderTopColor: '#ccc',
+    alignItems: 'center',
   },
   buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingVertical: 5,
+    width: '60%',
+    backgroundColor: '#fff',
+    borderRadius: 30,
+    paddingVertical: 10,
+    elevation: 4,
   },
   button: {
     padding: 10,
@@ -311,7 +385,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: 'gray',
     textAlign: 'center',
-  }
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  closeButton: {
+    color: 'white',
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  ampliada: {
+    width: 300,
+    height: 300,
+    resizeMode: 'contain',
+  },
+  postInfoContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  profileContainer: {
+    paddingBottom: 20,
+  },
 });
 
 export default ProfileScreen;

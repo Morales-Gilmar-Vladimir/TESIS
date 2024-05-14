@@ -8,6 +8,7 @@ const HomeScreen = ({ navigation }) => {
   const [publicaciones, setPublicaciones] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [imagenAmpliada, setImagenAmpliada] = useState('');
+  const [selectedPost, setSelectedPost] = useState(null);
   const [showMenu, setShowMenu] = useState(false);
   const [backPressCount, setBackPressCount] = useState(0);
 
@@ -20,8 +21,9 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  const handleImagePress = (url) => {
-    setImagenAmpliada(url);
+  const handleImagePress = (publicacion) => {
+    setSelectedPost(publicacion);
+    setImagenAmpliada(publicacion.imagen.secure_url);
     setModalVisible(true);
   };
 
@@ -69,36 +71,18 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Contenido principal */}
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.gridContainer}>
           {publicaciones.map((publicacion, index) => (
-            <TouchableOpacity key={index} style={styles.gridItem} onPress={() => handleImagePress(publicacion.imagen.secure_url)}>
+            <TouchableOpacity key={index} style={styles.gridItem} onPress={() => handleImagePress(publicacion)}>
               <Image
                 source={{ uri: publicacion.imagen.secure_url }}
                 style={styles.image}
               />
-              <Text style={styles.imageName}>{publicacion._id}</Text>
-              <Text style={styles.imageDescription}>{publicacion.descripcion}</Text>
             </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
-      {/* Botones en posición fija */}
-      <View style={styles.fixedButtonsContainer}>
-        <View style={styles.buttonsContainer}>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
-            <Icon name="home" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publish')}>
-            <Icon name="plus-square" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Perfil')}>
-            <Icon name="user" size={24} color="black" />
-          </TouchableOpacity>
-        </View>
-      </View>
-      {/* Modal para mostrar imagen ampliada */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -109,6 +93,12 @@ const HomeScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => setModalVisible(false)}>
             <Text style={styles.closeButton}>Cerrar</Text>
           </TouchableOpacity>
+          {selectedPost && (
+            <View style={styles.detailsContainer}>
+              <Text style={styles.userName}>{selectedPost.nombre}</Text>
+              <Text style={styles.imageDescription}>{selectedPost.descripcion}</Text>
+            </View>
+          )}
           <Image
             source={{ uri: imagenAmpliada }}
             style={styles.ampliada}
@@ -129,6 +119,20 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
+      {/* Botones de navegación */}
+      <View style={styles.fixedButtonsContainer}>
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
+            <Icon name="home" size={24} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publish')}>
+            <Icon name="plus-square" size={24} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Perfil')}>
+            <Icon name="user" size={24} color="black" />
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 };
@@ -142,7 +146,7 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     flexGrow: 1,
-    paddingTop: 60, // Ajusta el padding para dejar espacio para la barra lateral
+    paddingTop: 60, 
   },
   gridContainer: {
     flexDirection: 'row',
@@ -172,6 +176,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 5,
     marginLeft: 10,
+    color: 'white'
   },
   modalContainer: {
     flex: 1,
@@ -184,32 +189,40 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 10,
   },
+  detailsContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+    color: 'white'
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    color: 'white'
+  },
   ampliada: {
     width: 300,
     height: 300,
     resizeMode: 'contain',
   },
+  fixedButtonsContainer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
   buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    width: '100%',
-    marginTop: 20,
+    width: '60%',
+    backgroundColor: '#fff',
+    borderRadius: 30,
+    paddingVertical: 10,
+    elevation: 4,
   },
   button: {
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 25,
-    backgroundColor: 'lightblue',
-  },
-  fixedButtonsContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'white',
-    zIndex: 100,
+    padding: 10,
   },
 });
 
