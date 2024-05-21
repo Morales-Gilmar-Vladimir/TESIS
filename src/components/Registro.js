@@ -95,7 +95,7 @@ const Registro = ({ navigation }) => {
 
   const handleTermsPress = () => {
     // Aquí defines la URL de tus términos y condiciones
-    const termsUrl = 'https://tusitio.com/terminosycondiciones';
+    const termsUrl = 'https://drive.google.com/file/d/1_T_H0VBNnASnxYdumS-wCm0H1_IzfaFm/view?usp=sharing';
     Linking.openURL(termsUrl);
   };
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -8,6 +7,7 @@ import Login from '../components/Login';
 import Registro from '../components/Registro';
 import HomeScreen from '../screens/HomeScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import PublishScreen from '../screens/PublishScreen';
 import styles from '../styles/styles';
 
 const Stack = createStackNavigator();
@@ -41,16 +41,16 @@ const Navigation = () => {
   return (
     <Tab.Navigator initialRouteName="Login">
       <Tab.Screen name="Login" 
-      component={Login}
-      options={({ navigation, route }) => ({
-        tabBarButton: () => (
-          <Text
-            style={styles.tabBarButton}
-            onPress={() => {
-              if (route.name !== 'Login') {
-                navigation.navigate('Login');
-              }
-            }}
+        component={Login}
+        options={({ navigation, route }) => ({
+          tabBarButton: () => (
+            <Text
+              style={styles.tabBarButton}
+              onPress={() => {
+                if (route.name !== 'Login') {
+                  navigation.navigate('Login');
+                }
+              }}
             >
             </Text>
           ),
@@ -67,11 +67,11 @@ const Navigation = () => {
                   navigation.navigate('Registro');
                 }
               }}
-              >
-              </Text>
-            ),
-          })}
-        />
+            >
+            </Text>
+          ),
+        })}
+      />
       <Tab.Screen
         name="Home"
         component={HomeScreen}
@@ -98,6 +98,21 @@ const Navigation = () => {
               <Text
                 style={styles.tabBarButton}
                 onPress={() => navigation.navigate('Perfil')}
+              >
+              </Text>
+            ),
+          })}
+        />   
+      )}
+      {isLoggedIn && (
+        <Tab.Screen
+          name="Publicar"
+          component={PublishScreen}
+          options={({ navigation }) => ({
+            tabBarButton: () => (
+              <Text
+                style={styles.tabBarButton}
+                onPress={() => navigation.navigate('Publicar')}
               >
               </Text>
             ),

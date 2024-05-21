@@ -64,10 +64,19 @@ const HomeScreen = ({ navigation }) => {
     };
   
     const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
-  
+    
+
+    
     return () => backHandler.remove();
   }, [backPressCount, navigation]);
   
+
+    // Función para navegar a la pantalla de perfil y forzar la actualización de la pantalla de inicio
+    const navigateToProfile = () => {
+      navigation.navigate('Perfil');
+      fetchPublicaciones(); // Actualizar publicaciones cuando regresas de la pantalla de perfil
+    };
+
 
   return (
     <View style={styles.container}>
@@ -82,6 +91,7 @@ const HomeScreen = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </View>
+        <View style={{ height: 70 }} />
       </ScrollView>
       <Modal
         animationType="slide"
@@ -125,10 +135,10 @@ const HomeScreen = ({ navigation }) => {
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
             <Icon name="home" size={24} color="black" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publish')}>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publicar')}>
             <Icon name="plus-square" size={24} color="black" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Perfil')}>
+          <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
             <Icon name="user" size={24} color="black" />
           </TouchableOpacity>
         </View>

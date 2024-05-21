@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, BackHandler, Modal } from 'react-native';
+import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, BackHandler, Modal, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -111,11 +111,10 @@ const confirmProfileImage = async () => {
   }
 };
 
-  // Función para forzar la actualización del componente
-  const forceUpdate = () => {
-    setSelectedImageUri(null); // Reiniciamos la URI de la imagen seleccionada
-    fetchUserData(); // Volvemos a cargar los datos de usuario para reflejar los cambios
-  };
+const forceUpdate = () => {
+  setSelectedImageUri(null); 
+  fetchUserData(); 
+};
 
 const updateProfileImage = async (imageUri) => {
   try {
@@ -129,7 +128,6 @@ const updateProfileImage = async (imageUri) => {
       type: 'image/jpeg',
     });
 
-    // Actualizar la foto de perfil en la ruta del usuario/id
     const responseUserById = await axios.put(`https://ropdat.onrender.com/api/usuario/foto/${userId}`, formData, {
       headers: {
         Authorization: `Bearer ${userToken}`,
@@ -138,7 +136,6 @@ const updateProfileImage = async (imageUri) => {
     });
     console.log('Respuesta de la actualización de la foto de perfil en la ruta del usuario/id:', responseUserById.data);
 
-    // Obtener los datos actualizados del usuario después de la actualización
     console.log('Obteniendo los datos actualizados del usuario...');
     const responseUserData = await axios.get(`https://ropdat.onrender.com/api/usuario/${userId}`, {
       headers: {
@@ -160,36 +157,73 @@ const updateProfileImage = async (imageUri) => {
   }
 };
 
-  const handleImagePress = (url, post) => {
-    setSelectedPost(post);
-    setImagenAmpliada(url);
-    setModalVisible(true);
-  };
+const handleImagePress = (url, post) => {
+  setSelectedPost(post);
+  setImagenAmpliada(url);
+  setModalVisible(true);
+};
 
+const handleLogout = async () => {
+  try {
+    await AsyncStorage.removeItem('token');
+    await AsyncStorage.removeItem('_id');
+    setUserData(null);
+    setPublicaciones([]);
+    setSelectedImageUri(null);
+    navigation.navigate('Login');
+  } catch (error) {
+    console.error('Error al cerrar sesión:', error);
+  }
+};
 
-  const handleLogout = async () => {
-    try {
-      await AsyncStorage.removeItem('token');
-      await AsyncStorage.removeItem('_id');
-      setUserData(null);
-      setPublicaciones([]);
-      setSelectedImageUri(null);
-      navigation.navigate('Login');
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+const navigateToHome = () => {
+  navigation.navigate('Home');
+  forceUpdate(); // Llamamos a la función para actualizar la pantalla de inicio
+};
+
+const handleEdit = () => {
+  const postId = selectedPost._id;
+  navigation.navigate('EditarPublicacion', { postId });
+  setModalVisible(false); // Ocultar el modal después de navegar a la pantalla de edición
+};
+
+const handleDelete = async (postId) => {
+  try {
+    const userToken = await AsyncStorage.getItem('token');
+
+    // Realizar la solicitud de eliminación al servidor
+    const response = await axios.delete(`https://ropdat.onrender.com/api/publicar/eliminar`, {
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+      }
+    });
+
+    if (response.status === 200) {
+      // Actualizar las publicaciones después de la eliminación
+      fetchUserData();
+      setModalVisible(false); // Ocultar el modal después de eliminar la publicación
+      Alert.alert('Publicación eliminada', 'La publicación ha sido eliminada correctamente.');
+    } else {
+      throw new Error('Error al eliminar la publicación');
     }
-  };
-  return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.profileContainer}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.optionsButton} onPress={handleLogout}>
-            <Icon name="sign-out" size={24} color="black" />
-          </TouchableOpacity>
-        </View>
-        {userData && (
-          <>
-            <View style={styles.profilePictureContainer}>
+  } catch (error) {
+    console.error('Error al eliminar la publicación:', error);
+    Alert.alert('Error', 'Se produjo un error al intentar eliminar la publicación. Por favor, inténtalo de nuevo más tarde.');
+  }
+};
+
+
+return (
+  <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.profileContainer}>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.optionsButton} onPress={handleLogout}>
+          <Icon name="sign-out" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
+      {userData && (
+        <>
+          <View style={styles.profilePictureContainer}>
             <TouchableOpacity onPress={selectProfileImage}>
               {loadingImage ? (
                 <Text>Cargando imagen...</Text>
@@ -198,7 +232,6 @@ const updateProfileImage = async (imageUri) => {
                   {selectedImageUri ? (
                     <>
                       <Image source={{ uri: selectedImageUri }} style={styles.profilePicture} />
-                      
                     </>
                   ) : (
                     <>
@@ -217,68 +250,77 @@ const updateProfileImage = async (imageUri) => {
                 </>
               )}
             </TouchableOpacity>
+          </View>
+          <View style={styles.userDataContainer}>
+            <Text style={styles.username}>{userData.nombre}</Text>
+            <Text style={styles.description}>{userData.descripcion}</Text>
+            <View style={styles.statsContainer}>
+              <Text style={styles.stat}>{publicaciones.length} publicaciones</Text>
             </View>
-            <View style={styles.userDataContainer}>
-              <Text style={styles.username}>{userData.nombre}</Text>
-              <Text style={styles.description}>{userData.descripcion}</Text>
-              <View style={styles.statsContainer}>
-                <Text style={styles.stat}>{publicaciones.length} publicaciones</Text>
-              </View>
-            </View>
-          </>
+          </View>
+        </>
+      )}
+      <View style={styles.postsContainer}>
+        {publicaciones.length > 0 ? (
+          publicaciones.map((publicacion, index) => (
+            <TouchableOpacity key={index} style={styles.gridItem} onPress={() => handleImagePress(publicacion.imagen.secure_url, publicacion)}>
+              <Image
+                source={{ uri: publicacion.imagen.secure_url }}
+                style={styles.image}
+              />
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text>No hay publicaciones</Text>
         )}
-        <View style={styles.postsContainer}>
-          {publicaciones.length > 0 ? (
-            publicaciones.map((publicacion, index) => (
-              <TouchableOpacity key={index} style={styles.gridItem} onPress={() => handleImagePress(publicacion.imagen.secure_url, publicacion)}>
-                <Image
-                  source={{ uri: publicacion.imagen.secure_url }}
-                  style={styles.image}
-                />
-              </TouchableOpacity>
-            ))
-          ) : (
-            <Text>No hay publicaciones</Text>
-          )}
-        </View>
-      </ScrollView>
-      <View style={styles.fixedButtonsContainer}>
-        <View style={styles.buttonsContainer}>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
-            <Icon name="home" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publish')}>
-            <Icon name="plus-square" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Perfil')}>
-            <Icon name="user" size={24} color="black" />
-          </TouchableOpacity>
-        </View>
       </View>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <TouchableOpacity onPress={() => setModalVisible(false)}>
-            <Text style={styles.closeButton}>Cerrar</Text>
-          </TouchableOpacity>
-          <Image
-            source={{ uri: imagenAmpliada }}
-            style={styles.ampliada}
-          />
-          {selectedPost && (
-            <View style={styles.postInfoContainer}>
-              <Text style={styles.imageName}>{selectedPost._id}</Text>
-              <Text style={styles.imageDescription}>{selectedPost.descripcion}</Text>
-            </View>
-          )}
-        </View>
-      </Modal>
+
+      <View style={{ height: 50 }} />
+    </ScrollView>
+    <View style={styles.fixedButtonsContainer}>
+      <View style={styles.buttonsContainer}>
+          <TouchableOpacity style={styles.button} onPress={navigateToHome}>
+          <Icon name="home" size={24} color="black" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publicar')}>
+          <Icon name="plus-square" size={24} color="black" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Perfil')}>
+          <Icon name="user" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
     </View>
-  );
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={modalVisible}
+      onRequestClose={() => setModalVisible(false)}
+    >
+      <View style={styles.modalContainer}>
+        <TouchableOpacity onPress={() => setModalVisible(false)}>
+          <Text style={styles.closeButton}>Cerrar</Text>
+        </TouchableOpacity>
+        <Image
+          source={{ uri: imagenAmpliada }}
+          style={styles.ampliada}
+        />
+        {selectedPost && (
+          <View style={styles.postInfoContainer}>
+            <Text style={styles.imageName}>{selectedPost._id}</Text>
+            <Text style={styles.imageDescription}>{selectedPost.descripcion}</Text>
+            <TouchableOpacity style={styles.button} onPress={handleEdit}>
+              <Text style={styles.buttonText}>Editar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={() => handleDelete(selectedPost._id)}>
+              <Text style={styles.buttonText}>Eliminar</Text>
+            </TouchableOpacity>
+
+          </View>
+        )}
+      </View>
+    </Modal>
+  </View>
+);
 };
 
 const styles = StyleSheet.create({
@@ -408,13 +450,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     marginTop: 20,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  profileContainer: {
-    paddingBottom: 20,
   },
 });
 

@@ -3,6 +3,8 @@ import { View, ScrollView, StyleSheet } from 'react-native';
 import Login from './components/Login';
 import Registro from './components/Registro';
 import Home from './screens/HomeScreen'
+import ProfileScreen from './screens/ProfileScreen';
+import PublishScreen from './screens/PublishScreen';
 
 const Main = () => {
   return (
@@ -15,6 +17,12 @@ const Main = () => {
       </View>
       <View style={styles.page}>
         <Home />
+      </View>
+      <View style={styles.page}>
+        <ProfileScreen />
+      </View>
+      <View style={styles.page}>
+        <PublishScreen />
       </View>
     </ScrollView>
   );

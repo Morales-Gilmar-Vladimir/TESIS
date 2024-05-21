@@ -6,6 +6,7 @@ import Login from './components/Login';
 import HomeScreen from './screens/HomeScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import PublishScreen from './screens/PublishScreen';
 
 const Stack = createStackNavigator();
 
@@ -53,6 +54,11 @@ const App = () => {
         <Stack.Screen
           name="Perfil"
           component={ProfileScreen}
+          options={{ title: 'Perfil Usuario' }}
+        />
+        <Stack.Screen
+          name="Publicar"
+          component={PublishScreen}
           options={{ title: 'Perfil Usuario' }}
         />
       </Stack.Navigator>
