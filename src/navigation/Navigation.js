@@ -8,6 +8,7 @@ import Registro from '../components/Registro';
 import HomeScreen from '../screens/HomeScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import PublishScreen from '../screens/PublishScreen';
+import EditarPublicacion from '../screens/EditarPublicacion'
 import styles from '../styles/styles';
 
 const Stack = createStackNavigator();
@@ -22,8 +23,8 @@ const Navigation = () => {
 
   const checkLoginStatus = async () => {
     try {
-      const userToken = await AsyncStorage.getItem('token'); // Obtener el token de AsyncStorage
-      setIsLoggedIn(!!userToken); // Verificar si el token es válido
+      const userToken = await AsyncStorage.getItem('token'); 
+      setIsLoggedIn(!!userToken); 
     } catch (error) {
       console.error('Error al verificar el estado de la sesión:', error);
     }
@@ -31,8 +32,8 @@ const Navigation = () => {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('token'); // Eliminar el token de AsyncStorage
-      setIsLoggedIn(false); // Actualizar el estado de isLoggedIn
+      await AsyncStorage.removeItem('token'); 
+      setIsLoggedIn(false); 
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }
@@ -113,6 +114,21 @@ const Navigation = () => {
               <Text
                 style={styles.tabBarButton}
                 onPress={() => navigation.navigate('Publicar')}
+              >
+              </Text>
+            ),
+          })}
+        />
+      )}
+      {isLoggedIn && (
+        <Tab.Screen
+          name="EditarPublicacion"
+          component={EditarPublicacion}
+          options={({ navigation }) => ({
+            tabBarButton: () => (
+              <Text
+                style={styles.tabBarButton}
+                onPress={() => navigation.navigate('EditarPublicacion')}
               >
               </Text>
             ),

@@ -76,7 +76,7 @@ const handleBackPress = () => {
         Alert.alert('Error', 'Debes seleccionar una imagen');
         return;
       }
-  
+      
       const formData = new FormData();
       formData.append('descripcion', descripcion);
       formData.append('temporada', temporada);
@@ -140,6 +140,18 @@ const handleBackPress = () => {
     navigation.navigate('Home');
   };
 
+  const handleDescriptionChange = (text) => {
+    const newText = text.slice(0, 70); 
+    const lines = newText.split('\n');
+    if (lines.length > 2) {
+      setDescripcion(lines.slice(0, 2).join('\n'));
+    } else {
+      setDescripcion(newText);
+    }
+  };
+  
+
+  
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
@@ -160,16 +172,16 @@ const handleBackPress = () => {
         <TouchableOpacity style={styles.button} onPress={pickImageFromGallery}>
           <Text style={styles.buttonText}>Seleccionar imagen</Text>
         </TouchableOpacity>
-       
-        <TextInput
-          style={styles.input}
-          placeholder="Descripción"
-          value={descripcion}
-          onChangeText={text => setDescripcion(text)}
-          maxLength={200}
-          multiline
-          numberOfLines={4}
-        />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Descripción"
+        value={descripcion}
+        onChangeText={handleDescriptionChange}
+        maxLength={70}
+        multiline
+        numberOfLines={4}
+      />
         <Picker
           style={styles.input}
           selectedValue={temporada}
@@ -198,27 +210,14 @@ const handleBackPress = () => {
         </Picker>
         <Picker
           style={styles.input}
-          selectedValue={estilo}
-          onValueChange={value => setEstilo(value)}
+          selectedValue={estiloG}
+          onValueChange={value => setEstiloG(value)}
         >
           <Picker.Item label="Casual" value="Casual" />
           <Picker.Item label="Formal" value="Formal" />
           <Picker.Item label="Otros" value="Otros" />
         </Picker>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Año"
-          value={anio}
-          onChangeText={text => setAnio(text)}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Estilo General"
-          value={estiloG}
-          onChangeText={text => setEstiloG(text)}
-        />
+       
          <TouchableOpacity style={styles.publishButton} onPress={publishPost}>
           <Text style={styles.buttonText}>Publicar</Text>
         </TouchableOpacity>
@@ -291,7 +290,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   publishButton: {
-    backgroundColor: 'blue',
+    backgroundColor: '#0F7BB5',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 5,

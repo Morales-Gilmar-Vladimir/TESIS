@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 5,
-    color: '#330099', //CAMBIAR COLOR
+    color: '#0F7BB5', 
     textAlign: 'left',
     fontWeight: 'bold'
   },
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     height: 50,
-    backgroundColor: '#007bff',
+    backgroundColor: '#0F7BB5',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
@@ -85,9 +85,10 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   loginButton: {
-    color: '#007bff',
+    color: '#0F7BB5',
     textDecorationLine: 'underline',
-  }, registroContainer: {
+  }, 
+  registroContainer: {
     flexDirection: 'row',
     marginTop: 20,
     alignItems: 'center',
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   registroLink: {
-    color: '#007bff',
+    color: '#0F7BB5',
     textDecorationLine: 'underline',
   }, 
   errorText: {
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
   checkedIcon: {
     width: 12,
     height: 12,
-    backgroundColor: 'blue', // Cambia el color como desees
+    backgroundColor: '#0F7BB5', 
     borderRadius: 3,
   },
   checkboxLabel: {
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   termsLink: {
-    color: 'blue',
+    color: '#0F7BB5',
     textDecorationLine: 'underline',
     marginTop: 5,
   },

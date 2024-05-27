@@ -7,6 +7,7 @@ import HomeScreen from './screens/HomeScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PublishScreen from './screens/PublishScreen';
+import EditarPublicacion from './screens/EditarPublicacion'
 
 const Stack = createStackNavigator();
 
@@ -30,7 +31,7 @@ const App = () => {
   };
 
   if (isLoading) {
-    return null; // Puedes mostrar un indicador de carga aquí mientras verificamos el estado de inicio de sesión
+    return null; 
   }
 
   return (
@@ -60,6 +61,11 @@ const App = () => {
           name="Publicar"
           component={PublishScreen}
           options={{ title: 'Perfil Usuario' }}
+        />
+        <Stack.Screen
+          name="Editar Publicacion"
+          component={EditarPublicacion}
+          options={{ title: 'Editar Publicacion' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
