@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { BackHandler, View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
+import { BackHandler, View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, Modal, Alert, TextInput } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { useFocusEffect } from '@react-navigation/native'; 
+import { useFocusEffect } from '@react-navigation/native';
 
 const HomeScreen = ({ navigation }) => {
   const [publicaciones, setPublicaciones] = useState([]);
@@ -12,51 +12,60 @@ const HomeScreen = ({ navigation }) => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [showMenu, setShowMenu] = useState(false);
   const [backPressCount, setBackPressCount] = useState(0);
-  const [likedPosts, setLikedPosts] = useState([]); 
-  const [isLiked, setIsLiked] = useState(false);
+  const [likedPosts, setLikedPosts] = useState([]);
+  const [dislikedPosts, setDislikedPosts] = useState([]);
   const [favoritePosts, setFavoritePosts] = useState([]);
-// Función para cargar publicaciones, "Me gusta" y favoritos almacenados localmente
-const fetchData = async () => {
-  try {
-    const token = await AsyncStorage.getItem('token');
-    const response = await axios.get('https://ropdat.onrender.com/api/publicaciones', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    setPublicaciones(response.data);
+  const [reporteModalVisible, setReporteModalVisible] = useState(false);
+  const [motivo, setMotivo] = useState('');
+  const [detalle, setDetalle] = useState('');
+  const [imageRatios, setImageRatios] = useState({});
+  
+  const [isLiked, setIsLiked] = useState(false);
 
-    // Obtener las publicaciones marcadas como favoritas del almacenamiento local
-    const favoritosString = await AsyncStorage.getItem('favoritos');
-    if (favoritosString) {
-      const favoritosArray = JSON.parse(favoritosString);
-      setFavoritePosts(favoritosArray);
+  // Función para cargar publicaciones, "Me gusta" y favoritos almacenados localmente
+  const fetchData = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await axios.get('https://ropdat.onrender.com/api/publicaciones', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setPublicaciones(response.data);
+
+       // Obtener las publicaciones marcadas como favoritas del almacenamiento local
+      const favoritosString = await AsyncStorage.getItem('favoritos');
+      if (favoritosString) {
+        const favoritosArray = JSON.parse(favoritosString);
+        setFavoritePosts(favoritosArray);
+      }
+
+      const likedPostsString = await AsyncStorage.getItem('likedPosts');
+      if (likedPostsString) {
+        const likedPostsArray = JSON.parse(likedPostsString);
+        setLikedPosts(likedPostsArray);
+      }
+
+      const dislikedPostsString = await AsyncStorage.getItem('dislikedPosts');
+      if (dislikedPostsString) {
+        const dislikedPostsArray = JSON.parse(dislikedPostsString);
+        setDislikedPosts(dislikedPostsArray);
+      }
+    } catch (error) {
+      console.error('Error al obtener las publicaciones:', error);
     }
+  };
 
-    // Obtener las publicaciones marcadas como "Me gusta" del almacenamiento local
-    const likedPostsString = await AsyncStorage.getItem('likedPosts');
-    if (likedPostsString) {
-      const likedPostsArray = JSON.parse(likedPostsString);
-      setLikedPosts(likedPostsArray);
-    }
-  } catch (error) {
-    console.error('Error al obtener las publicaciones:', error);
-  }
-};
-
-
-// Llama a fetchData cuando se monta el componente
-useEffect(() => {
-  fetchData();
-}, []);
-
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const fetchPublicaciones = async () => {
     try {
-      const token = await AsyncStorage.getItem('token'); // Obtener el token del almacenamiento
+      const token = await AsyncStorage.getItem('token');
       const response = await axios.get('https://ropdat.onrender.com/api/publicaciones', {
         headers: {
-          Authorization: `Bearer ${token}`, // Incluir el token en el encabezado de la solicitud
+          Authorization: `Bearer ${token}`,
         },
       });
       setPublicaciones(response.data);
@@ -72,39 +81,36 @@ useEffect(() => {
     setIsLiked(likedPosts.includes(publicacion._id));
   };
 
-
-  // Función para manejar el evento de dar "Me gusta" a una publicación
   const handleLike = async (postId) => {
     try {
       const userToken = await AsyncStorage.getItem('token');
-      const userId = await AsyncStorage.getItem('_id');
-  
       const response = await axios.put(`https://ropdat.onrender.com/api/publicacion/like/${postId}`, null, {
         headers: {
           Authorization: `Bearer ${userToken}`,
         },
       });
-  
+
       if (response.status === 200) {
-        // Almacenar la publicación marcada como "Me gusta" en el almacenamiento local
         const updatedLikedPosts = [...likedPosts, postId];
         await AsyncStorage.setItem('likedPosts', JSON.stringify(updatedLikedPosts));
+        setLikedPosts(updatedLikedPosts);
 
         const updatedPublicaciones = publicaciones.map((publicacion) =>
           publicacion._id === postId ? { ...publicacion, likes: response.data.likes } : publicacion
         );
         setPublicaciones(updatedPublicaciones);
 
-         // Recargar las publicaciones actualizadas desde la API
-         fetchPublicaciones();
-
+        if (dislikedPosts.includes(postId)) {
+          await handleRemoveDislike(postId);
+        }
       }
     } catch (error) {
       console.error('Error al dar me gusta:', error);
       Alert.alert('Error', 'Hubo un problema al dar me gusta a esta imagen.');
     }
   };
-  const QuitarLike = async (postId) => {
+
+  const handleRemoveLike = async (postId) => {
     try {
       const userToken = await AsyncStorage.getItem('token');
       const response = await axios.put(`https://ropdat.onrender.com/api/publicacion/likeEliminar/${postId}`, null, {
@@ -112,13 +118,12 @@ useEffect(() => {
           Authorization: `Bearer ${userToken}`,
         },
       });
-  
+
       if (response.status === 200) {
-        // Eliminar la publicación marcada como "Me gusta" del almacenamiento local
         const updatedLikedPosts = likedPosts.filter((likedPostId) => likedPostId !== postId);
         await AsyncStorage.setItem('likedPosts', JSON.stringify(updatedLikedPosts));
-  
-        // Actualizar solo la publicación afectada
+        setLikedPosts(updatedLikedPosts);
+
         const updatedPublicaciones = publicaciones.map((publicacion) =>
           publicacion._id === postId ? { ...publicacion, likes: response.data.likes } : publicacion
         );
@@ -129,18 +134,60 @@ useEffect(() => {
       Alert.alert('Error', 'Hubo un problema al quitar me gusta a esta imagen.');
     }
   };
-  
-  
-  const handleDislike = () => {
-    Alert.alert('¡No me gusta!', 'No me gusta.');
+
+  const handleDislike = async (postId) => {
+    try {
+      const userToken = await AsyncStorage.getItem('token');
+      const response = await axios.put(`https://ropdat.onrender.com/api/publicacion/dilike/${postId}`, null, {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
+
+      if (response.status === 200) {
+        const updatedDislikedPosts = [...dislikedPosts, postId];
+        await AsyncStorage.setItem('dislikedPosts', JSON.stringify(updatedDislikedPosts));
+        setDislikedPosts(updatedDislikedPosts);
+
+        const updatedPublicaciones = publicaciones.map((publicacion) =>
+          publicacion._id === postId ? { ...publicacion, dislikes: response.data.dislikes } : publicacion
+        );
+        setPublicaciones(updatedPublicaciones);
+
+        if (likedPosts.includes(postId)) {
+          await handleRemoveLike(postId);
+        }
+      }
+    } catch (error) {
+      console.error('Error al dar dislike:', error);
+      Alert.alert('Error', 'Hubo un problema al dar dislike a esta imagen.');
+    }
   };
 
-  
+  const handleRemoveDislike = async (postId) => {
+    try {
+      const userToken = await AsyncStorage.getItem('token');
+      const response = await axios.put(`https://ropdat.onrender.com/api/publicacion/dislikeEliminar/${postId}`, null, {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
 
-  const handleReport = () => {
-    Alert.alert('¡Imagen reportada!', 'Has reportado esta imagen.');
+      if (response.status === 200) {
+        const updatedDislikedPosts = dislikedPosts.filter((dislikedPostId) => dislikedPostId !== postId);
+        await AsyncStorage.setItem('dislikedPosts', JSON.stringify(updatedDislikedPosts));
+        setDislikedPosts(updatedDislikedPosts);
+
+        const updatedPublicaciones = publicaciones.map((publicacion) =>
+          publicacion._id === postId ? { ...publicacion, dislikes: response.data.dislikes } : publicacion
+        );
+        setPublicaciones(updatedPublicaciones);
+      }
+    } catch (error) {
+      console.error('Error al quitar dislike:', error);
+      Alert.alert('Error', 'Hubo un problema al quitar dislike a esta imagen.');
+    }
   };
-
 
   const handleAddToFavorites = async (postId) => {
     try {
@@ -181,7 +228,47 @@ useEffect(() => {
     }
   };
 
-  useEffect(() => {
+  const handleReport = () => {
+    setReporteModalVisible(true);
+  };
+
+  const handleReportSubmit = async () => {
+    if (!motivo || !detalle) {
+      Alert.alert('Error', 'Debes completar todos los campos.');
+      return;
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await axios.post(
+        `https://ropdat.onrender.com/api/publicaciones/reporte/${selectedPost._id}`,
+        { motivo, detalle },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        Alert.alert('Reporte enviado', 'Tu reporte ha sido enviado correctamente.');
+        setReporteModalVisible(false);
+        setMotivo('');
+        setDetalle('');
+      }
+    } catch (error) {
+      console.error('Error al enviar el reporte:', error);
+      Alert.alert('Error', 'Hubo un problema al enviar tu reporte.');
+    }
+  };
+
+  const handleReporteClose = () => {
+    setReporteModalVisible(false);
+    setMotivo('');
+    setDetalle('');
+  };
+
+useEffect(() => {
     fetchPublicaciones();
   }, []);
 
@@ -205,22 +292,43 @@ useEffect(() => {
     return () => backHandler.remove();
   }, [backPressCount, navigation]);
   
+
   const navigateToProfile = () => {
     navigation.navigate('Perfil');
     fetchPublicaciones();
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const handleBackPress = () => {
+        if (backPressCount === 0) {
+          setBackPressCount(1);
+          setTimeout(() => setBackPressCount(0), 2000);
+          return true;
+        } else if (backPressCount === 1) {
+          BackHandler.exitApp();
+          return true;
+        }
+        return false;
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+
+      return () => BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+    }, [backPressCount])
+  );
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.gridContainer}>
           {publicaciones.map((publicacion, index) => (
-             <TouchableOpacity key={index} style={styles.gridItem} onPress={() => handleImagePress(publicacion)}>
-             <Image
-               source={{ uri: publicacion.imagen.secure_url }}
-               style={styles.image}
-             />
-             <Text style={styles.likesText}>{publicacion.likes} ❤️</Text>
+            <TouchableOpacity key={index} style={styles.gridItem} onPress={() => handleImagePress(publicacion)}>
+              <Image
+                source={{ uri: publicacion.imagen.secure_url }}
+                style={[styles.image, { aspectRatio: imageRatios[publicacion._id] || 1 }]}
+              />
+              <Text style={styles.likesText}>{publicacion.likes} ❤️</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -233,7 +341,7 @@ useEffect(() => {
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalContainer}>
-        <TouchableOpacity onPress={() => {
+          <TouchableOpacity onPress={() => {
             setModalVisible(false);
             fetchData();
           }}>
@@ -246,34 +354,43 @@ useEffect(() => {
               <Text style={styles.imageDescription}>{selectedPost.descripcion}</Text>
             </View>
           )}
-          <Image
-            source={{ uri: imagenAmpliada }}
-            style={styles.ampliada}
-          />
+          <Image source={{ uri: imagenAmpliada }} style={styles.ampliada} />
+          <View style={{ height: 30 }} />
           <View style={styles.buttonsContainer}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={async () => {
-              if (selectedPost) {
-                if (likedPosts.includes(selectedPost._id)) {
-                  await QuitarLike(selectedPost._id);
+            <TouchableOpacity
+              style={styles.button}
+              onPress={async () => {
+                if (selectedPost) {
+                  if (likedPosts.includes(selectedPost._id)) {
+                    await handleRemoveLike(selectedPost._id);
+                  } else {
+                    await handleLike(selectedPost._id);
+                  }
                   setSelectedPost({ ...selectedPost });
                   fetchData();
-                } else {
-                  await handleLike(selectedPost._id);
-                  setSelectedPost({ ...selectedPost }); 
+                }
+              }}
+            >
+              <Icon name="thumbs-up" size={30} color={selectedPost && likedPosts.includes(selectedPost._id) ? 'blue' : 'black'} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.button}
+              onPress={async () => {
+                if (selectedPost) {
+                  if (dislikedPosts.includes(selectedPost._id)) {
+                    await handleRemoveDislike(selectedPost._id);
+                  } else {
+                    await handleDislike(selectedPost._id);
+                  }
+                  setSelectedPost({ ...selectedPost });
                   fetchData();
                 }
-              }
-            }}
-          >
-            <Icon name="thumbs-up" size={30} color={selectedPost && likedPosts.includes(selectedPost._id) ? 'blue' : 'black'} />
-          </TouchableOpacity>
-
-          
-            <TouchableOpacity style={styles.button} onPress={handleDislike}>
-              <Icon name="thumbs-down" size={30} color="black" />
+              }}
+            >
+              <Icon name="thumbs-down" size={30} color={selectedPost && dislikedPosts.includes(selectedPost._id) ? 'red' : 'black'} />
             </TouchableOpacity>
+
             <TouchableOpacity style={styles.button} onPress={handleReport}>
               <Icon name="exclamation-circle" size={30} color="black" />
             </TouchableOpacity>
@@ -282,11 +399,11 @@ useEffect(() => {
               onPress={async () => {
                 if (selectedPost) {
                   if (favoritePosts.includes(selectedPost._id)) {
-                    setSelectedPost({ ...selectedPost }); 
+                    setSelectedPost({ ...selectedPost });
                     fetchData();
                   } else {
                     await handleAddToFavorites(selectedPost._id);
-                    setSelectedPost({ ...selectedPost }); 
+                    setSelectedPost({ ...selectedPost });
                     fetchData();
                   }
                 }
@@ -294,7 +411,6 @@ useEffect(() => {
             >
               <Icon name="star" size={30} color={selectedPost && favoritePosts.includes(selectedPost._id) ? 'yellow' : 'black'} />
             </TouchableOpacity>
-
           </View>
         </View>
       </Modal>
@@ -311,14 +427,50 @@ useEffect(() => {
           </TouchableOpacity>
         </View>
       </View>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={reporteModalVisible}
+        onRequestClose={handleReporteClose}
+      >
+        <View style={styles.modalContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Motivo"
+          placeholderTextColor="white"
+          value={motivo}
+          onChangeText={text => setMotivo(text.replace(/\n/g, '').slice(0, 70))}
+          maxLength={70}
+          multiline={false}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Detalle"
+          placeholderTextColor="white"
+          value={detalle}
+          onChangeText={text => setDetalle(text.replace(/\n/g, '').slice(0, 70))}
+          maxLength={70}
+          multiline={false}
+        />
+          <TouchableOpacity onPress={handleReportSubmit}>
+            <Text style={styles.submitButton}>Enviar Reporte</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleReporteClose}>
+            <Text style={styles.closeButton}>Cerrar</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
     position: 'relative',
+    marginTop: -40, 
   },
   scrollViewContent: {
     flexGrow: 1,
@@ -336,13 +488,13 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     overflow: 'hidden',
     backgroundColor: 'lightgray',
-  },
-  imageContainer: {
-    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   image: {
     width: '100%',
-    aspectRatio: 0.5,
+    height: undefined,
+    aspectRatio: 1, 
     borderRadius: 15,
   },
   likesText: {
@@ -392,23 +544,15 @@ const styles = StyleSheet.create({
   closeButton: {
     color: 'white',
     fontSize: 18,
-    marginBottom: 10,
-  },
-  detailsContainer: {
-    alignItems: 'center',
     marginBottom: 20,
-    color: 'white'
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: 'white'
+    marginTop: 20,
   },
   ampliada: {
-    width: 300,
-    height: 300,
+    width: '100%',
+    height: '30%',
     resizeMode: 'contain',
+    borderRadius: 15,
+    
   },
   fixedButtonsContainer: {
     position: 'absolute',
@@ -424,12 +568,56 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 30,
     paddingVertical: 10,
-    elevation: 4,
+    elevation: 10,
   },
   button: {
     padding: 10,
   },
+  detailsContainer: {
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  menuContainer: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    zIndex: 10,
+  },
+  menuItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  menuItemText: {
+    fontSize: 16,
+  },
+  input: {
+    width: '80%',
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: 'gray',
+    color: 'white',
+  },
+  submitButton: {
+    color: 'white',
+    fontSize: 18,
+    marginTop: 20,
+  },
 });
 
 export default HomeScreen;
-

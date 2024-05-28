@@ -35,7 +35,12 @@ const ProfileScreen = ({ navigation }) => {
        setModalVisible(false);
        setImagenAmpliada('');
        setSelectedPost(null);
+       setDescripcionEditable('');
+       setDescripcionTemporal('');
+       setFavoritos([]);
        setEditandoDescripcion(false);
+       setFavoritePosts([]);
+
  
        // Cargar la información del usuario al enfocar la pantalla
        fetchUserData();

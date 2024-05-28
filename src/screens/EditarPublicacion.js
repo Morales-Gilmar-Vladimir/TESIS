@@ -15,6 +15,12 @@ const EditarPublicacion = ({ route, navigation }) => {
   const [estiloG, setEstiloG] = useState('');
   const [loading, setLoading] = useState(true);
   const [foto, setFoto] = useState(null);
+  const [showTemporadaSelectOption, setShowTemporadaSelectOption] = useState(true);
+  const [showEpocaSelectOption, setShowEpocaSelectOption] = useState(true);
+  const [showGeneroSelectOption, setShowGeneroSelectOption] = useState(true);
+  const [showEstiloGSelectOption, setShowEstiloGSelectOption] = useState(true);
+
+  
 
   useEffect(() => {
     const fetchPostData = async () => {
@@ -113,6 +119,30 @@ const EditarPublicacion = ({ route, navigation }) => {
     }
   };
   
+  const handleTemporadaChange = (value) => {
+    setTemporada(value);
+    setShowTemporadaSelectOption(value === null); // Mostrar el mensaje "Seleccione una temporada" solo si la temporada es null
+    setShowEpocaSelectOption(true); // Mostrar siempre el mensaje "Seleccione una época" después de seleccionar una temporada
+  };
+  
+  const handleEpocaChange = (value) => {
+    setEpoca(value);
+    setShowEpocaSelectOption(value === null); // Mostrar el mensaje "Seleccione una época" solo si la época es null
+    setShowTemporadaSelectOption(true); // Mostrar siempre el mensaje "Seleccione una temporada" después de seleccionar una época
+  };
+  
+  const handleGeneroChange = (value) => {
+    setGenero(value);
+    setShowGeneroSelectOption(value === null);
+     
+  };
+  
+  const handleEstiloGChange = (value) => {
+    setEstiloG(value);
+    setShowEstiloGSelectOption(value === null); 
+  
+  };
+  
   return (
     <View style={styles.container}>
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
@@ -129,41 +159,71 @@ const EditarPublicacion = ({ route, navigation }) => {
         multiline
         numberOfLines={4}
       />
-      <Picker
-          style={styles.input}
+      <View style={styles.pickerContainer}>
+        <Picker
           selectedValue={temporada}
-          onValueChange={value => setTemporada(value)}
+          onValueChange={handleTemporadaChange}
+          style={styles.picker}
         >
-          <Picker.Item label="Temporada 1" value="Temporada 1" />
-          <Picker.Item label="Temporada 2" value="Temporada 2" />
-          <Picker.Item label="Temporada 3" value="Temporada 3" />
+          {showTemporadaSelectOption && <Picker.Item label="Seleccione una temporada" value={null} />}
+          <Picker.Item label="Primavera" value="Primavera" />
+          <Picker.Item label="Verano" value="Verano" />
+          <Picker.Item label="Otoño" value="Otoño" />
+          <Picker.Item label="Invierno" value="Invierno" />
+          <Picker.Item label="Cualquier" value="Cualquier" />
         </Picker>
+      </View>
+
+
+      <View style={styles.pickerContainer}>
         <Picker
-          style={styles.input}
           selectedValue={epoca}
-          onValueChange={value => setEpoca(value)}
+          onValueChange={handleEpocaChange}
+          style={styles.picker}
         >
-          <Picker.Item label="Época 1" value="Época 1" />
-          <Picker.Item label="Época 2" value="Época 2" />
-          <Picker.Item label="Época 3" value="Época 3" />
+          {showEpocaSelectOption && <Picker.Item label="Seleccione una época" value={null} />}
+          <Picker.Item label="70's: 1970 - 1979" value="70's" />
+          <Picker.Item label="80's: 1980 - 1989" value="80's" />
+          <Picker.Item label="90's: 1990 - 1999" value="90's" />
+          <Picker.Item label="2000's: 2000 - 2009" value="2000's" />
+          <Picker.Item label="2010's: 2010 - 2019" value="2010's" />
+          <Picker.Item label="2020's: 2020 - presente" value="2020's" />
+          <Picker.Item label="Cualquier" value="Cualquier" />
         </Picker>
+      </View>
+
+      <View style={styles.pickerContainer}>
         <Picker
-          style={styles.input}
+          style={styles.picker}
           selectedValue={genero}
-          onValueChange={value => setGenero(value)}
+          onValueChange={handleGeneroChange}
         >
+          {showGeneroSelectOption && <Picker.Item label="Seleccione a que género va dirigido" value={null} />}
           <Picker.Item label="Masculino" value="Masculino" />
           <Picker.Item label="Femenino" value="Femenino" />
+          <Picker.Item label="Cualquier" value="Cualquier " />
         </Picker>
+      </View>
+
+      <View style={styles.pickerContainer}>
         <Picker
-          style={styles.input}
+          style={styles.picker}
           selectedValue={estiloG}
-          onValueChange={value => setEstiloG(value)}
+          onValueChange={handleEstiloGChange}
         >
+          {showEstiloGSelectOption && <Picker.Item label="Seleccione un estilo" value={null} />}
           <Picker.Item label="Casual" value="Casual" />
           <Picker.Item label="Formal" value="Formal" />
+          <Picker.Item label="Deportivo" value="Deportivo" />
+          <Picker.Item label="Vintage" value="Vintage" />
+          <Picker.Item label="Bohemio" value="Bohemio" />
+          <Picker.Item label="Gotico" value="Gotico" />
+          <Picker.Item label="Punk" value="Punk" />
+          <Picker.Item label="Hipster" value="Hipster" />
+          <Picker.Item label="Urbano" value="Urbano" />
           <Picker.Item label="Otros" value="Otros" />
         </Picker>
+      </View>
       <Button title="Actualizar Publicación" onPress={handleUpdate} />
     </ScrollView>
   </View>
