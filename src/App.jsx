@@ -8,6 +8,9 @@ import ProfileScreen from './screens/ProfileScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PublishScreen from './screens/PublishScreen';
 import EditarPublicacion from './screens/EditarPublicacion'
+import Inicio from './components/Inicio'
+import Buscar from './components/Buscar'
+import Resultados from './components/Resultados'
 
 const Stack = createStackNavigator();
 
@@ -67,7 +70,18 @@ const App = () => {
           component={EditarPublicacion}
           options={{ title: 'Editar Publicacion' }}
         />
+        <Stack.Screen
+          name="Inicio"
+          component={Inicio}
+          options={{ title: 'Inicio' }}
+        />
+        <Stack.Screen
+          name="Buscar"
+          component={Buscar}
+          options={{ title: 'Buscar' }}
+        />
       </Stack.Navigator>
+
     </NavigationContainer>
   );
 };

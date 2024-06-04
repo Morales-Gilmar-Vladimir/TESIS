@@ -10,15 +10,19 @@ import ProfileScreen from '../screens/ProfileScreen';
 import PublishScreen from '../screens/PublishScreen';
 import EditarPublicacion from '../screens/EditarPublicacion'
 import styles from '../styles/styles';
+import Inicio from '../components/Inicio'
+import Buscar from '../components/Buscar'
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const Navigation = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isFirstLaunch, setIsFirstLaunch] = useState(null);
 
   useEffect(() => {
     checkLoginStatus();
+    checkFirstLaunchStatus();
   }, []);
 
   const checkLoginStatus = async () => {
@@ -30,17 +34,27 @@ const Navigation = () => {
     }
   };
 
-  const handleLogout = async () => {
+  const checkFirstLaunchStatus = async () => {
     try {
-      await AsyncStorage.removeItem('token'); 
-      setIsLoggedIn(false); 
+      const isFirstLaunchValue = await AsyncStorage.getItem('isFirstLaunch');
+      setIsFirstLaunch(isFirstLaunchValue === null);
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      console.error('Error al verificar el estado de la primera ejecución:', error);
     }
   };
 
+  if (isFirstLaunch === null) {
+    return null;
+  }
+
   return (
-    <Tab.Navigator initialRouteName="Login">
+    <Tab.Navigator initialRouteName={isFirstLaunch ? 'Inicio' : 'Login'}>
+      <Tab.Screen name="Inicio" 
+        component={Inicio}
+        options={({ navigation, route }) => ({
+          tabBarButton: () => null,
+        })}
+      />
       <Tab.Screen name="Login" 
         component={Login}
         options={({ navigation, route }) => ({
@@ -129,7 +143,21 @@ const Navigation = () => {
               <Text
                 style={styles.tabBarButton}
                 onPress={() => navigation.navigate('EditarPublicacion')}
-              >
+                  >
+              </Text>
+            ),
+          })}
+        />
+      )}{isLoggedIn && (
+        <Tab.Screen
+          name="Buscar"
+          component={Buscar}
+          options={({ navigation }) => ({
+            tabBarButton: () => (
+              <Text
+                style={styles.tabBarButton}
+                onPress={() => navigation.navigate('Buscar')}
+                  >
               </Text>
             ),
           })}
@@ -138,5 +166,6 @@ const Navigation = () => {
     </Tab.Navigator>
   );
 };
+
 
 export default Navigation;

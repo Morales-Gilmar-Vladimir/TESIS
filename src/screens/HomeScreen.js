@@ -4,6 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useFocusEffect } from '@react-navigation/native';
+import Buscar from '../components/Buscar'; 
+import { Picker } from '@react-native-picker/picker';
 
 const HomeScreen = ({ navigation }) => {
   const [publicaciones, setPublicaciones] = useState([]);
@@ -19,12 +21,15 @@ const HomeScreen = ({ navigation }) => {
   const [motivo, setMotivo] = useState('');
   const [detalle, setDetalle] = useState('');
   const [imageRatios, setImageRatios] = useState({});
-  
   const [isLiked, setIsLiked] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Función para cargar publicaciones, "Me gusta" y favoritos almacenados localmente
+// Función para cargar publicaciones, "Me gusta" y favoritos almacenados localmente
   const fetchData = async () => {
     try {
+      setLoading(true); // Iniciar estado de carga
+
       const token = await AsyncStorage.getItem('token');
       const response = await axios.get('https://ropdat.onrender.com/api/publicaciones', {
         headers: {
@@ -33,7 +38,7 @@ const HomeScreen = ({ navigation }) => {
       });
       setPublicaciones(response.data);
 
-       // Obtener las publicaciones marcadas como favoritas del almacenamiento local
+      // Obtener las publicaciones marcadas como favoritas del almacenamiento local
       const favoritosString = await AsyncStorage.getItem('favoritos');
       if (favoritosString) {
         const favoritosArray = JSON.parse(favoritosString);
@@ -53,8 +58,11 @@ const HomeScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error al obtener las publicaciones:', error);
+    } finally {
+      setLoading(false); // Terminar estado de carga
     }
   };
+
 
   useEffect(() => {
     fetchData();
@@ -208,25 +216,33 @@ const HomeScreen = ({ navigation }) => {
       );
   
       if (response.status === 200) {
-        // Obtener los favoritos actuales del AsyncStorage
-        const favoritosString = await AsyncStorage.getItem('favoritos');
-        let favoritosArray = [];
-        if (favoritosString) {
-          favoritosArray = JSON.parse(favoritosString);
-        }
-        // Agregar el nuevo favorito a la lista de favoritos
-        favoritosArray.push(postId);
-        // Guardar la lista actualizada de favoritos en AsyncStorage
-        await AsyncStorage.setItem('favoritos', JSON.stringify(favoritosArray));
+        // Verificar si la publicación ya está en favoritos
+        const alreadyInFavorites = favoritePosts.includes(postId);
   
-        setFavoritePosts(favoritosArray); // Actualizar el estado de favoritePosts
-        setIsLiked(true); // Actualizar el estado de isLiked
+        if (!alreadyInFavorites) {
+          // Si no está en favoritos, agregarlo
+          const updatedFavoritePosts = [...favoritePosts, postId];
+          await AsyncStorage.setItem('favoritos', JSON.stringify(updatedFavoritePosts));
+          setFavoritePosts(updatedFavoritePosts);
+        } else {
+          // Si ya está en favoritos, quitarlo
+          const updatedFavoritePosts = favoritePosts.filter((favPostId) => favPostId !== postId);
+          await AsyncStorage.setItem('favoritos', JSON.stringify(updatedFavoritePosts));
+          setFavoritePosts(updatedFavoritePosts);
+        }
+  
+        // Actualizar selectedPost si es necesario
+        if (selectedPost && selectedPost._id === postId) {
+          setSelectedPost({ ...selectedPost });
+        }
       }
     } catch (error) {
       console.error('Error al agregar a favoritos:', error);
-      Alert.alert('Error', 'Hubo un problema al agregar esta imagen a favoritos.');
+      Alert.alert('Aviso', 'Revisa tu lista de favoritos, esta imagen ya puede estar guardada.');
     }
   };
+  
+  
 
   const handleReport = () => {
     setReporteModalVisible(true);
@@ -300,6 +316,7 @@ useEffect(() => {
 
   useFocusEffect(
     React.useCallback(() => {
+      setSearching();
       const handleBackPress = () => {
         if (backPressCount === 0) {
           setBackPressCount(1);
@@ -318,9 +335,39 @@ useEffect(() => {
     }, [backPressCount])
   );
 
+  useEffect(() => {
+    const loadFavorites = async () => {
+      try {
+        const favoritesString = await AsyncStorage.getItem('favoritos');
+        if (favoritesString) {
+          const favoritesArray = JSON.parse(favoritesString);
+          setFavoritePosts(favoritesArray);
+        }
+      } catch (error) {
+        console.error('Error al cargar favoritos:', error);
+      }
+    };
+  
+    loadFavorites();
+  }, []);
+
+
+  const handleSearch = (searchText) => {
+    setSearching(true); // Iniciar búsqueda
+    const filteredPosts = publicaciones.filter((publicacion) =>
+      publicacion.titulo.toLowerCase().includes(searchText.toLowerCase()) ||
+      publicacion.descripcion.toLowerCase().includes(searchText.toLowerCase())
+    );
+    setPublicacionesFiltradas(filteredPosts);
+    setSearching(false); // Terminar búsqueda
+  };
+
+
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        
         <View style={styles.gridContainer}>
           {publicaciones.map((publicacion, index) => (
             <TouchableOpacity key={index} style={styles.gridItem} onPress={() => handleImagePress(publicacion)}>
@@ -333,7 +380,19 @@ useEffect(() => {
           ))}
         </View>
         <View style={{ height: 70 }} />
-      </ScrollView>
+      </ScrollView>  
+      <TouchableOpacity style={styles.searchButton} onPress={() => setSearching(true)}>
+        <Icon name="search" size={20} color="black" />
+      </TouchableOpacity>
+      {searching && (
+        <View style={styles.filterContainer}>
+          <Buscar buscarPublicaciones={setPublicaciones} />
+          <TouchableOpacity style={styles.XButton} onPress={() => setSearching(false)}>
+            <Icon name="times" size={20} color="black" />
+          </TouchableOpacity>
+        </View>
+      )} 
+
       <Modal
         animationType="slide"
         transparent={true}
@@ -343,7 +402,7 @@ useEffect(() => {
         <View style={styles.modalContainer}>
           <TouchableOpacity onPress={() => {
             setModalVisible(false);
-            fetchData();
+           // fetchData();
           }}>
             <Text style={styles.closeButton}>Cerrar</Text>
           </TouchableOpacity>
@@ -397,20 +456,23 @@ useEffect(() => {
             <TouchableOpacity
               style={styles.button}
               onPress={async () => {
-                if (selectedPost) {
-                  if (favoritePosts.includes(selectedPost._id)) {
-                    setSelectedPost({ ...selectedPost });
-                    fetchData();
-                  } else {
-                    await handleAddToFavorites(selectedPost._id);
-                    setSelectedPost({ ...selectedPost });
-                    fetchData();
-                  }
+                if (selectedPost && selectedPost._id) {
+                  await handleAddToFavorites(selectedPost._id);
+
+                  // No es necesario llamar a fetchData aquí
+                } else {
+                  console.error('No se ha seleccionado ninguna publicación');
                 }
               }}
             >
-              <Icon name="star" size={30} color={selectedPost && favoritePosts.includes(selectedPost._id) ? 'yellow' : 'black'} />
+              <Icon
+                name="star"
+                size={30}
+                color={selectedPost && favoritePosts.includes(selectedPost._id) ? 'yellow' : 'black'}
+              />
             </TouchableOpacity>
+
+
           </View>
         </View>
       </Modal>
@@ -419,6 +481,9 @@ useEffect(() => {
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
             <Icon name="home" size={24} color="black" />
           </TouchableOpacity>
+          {/*<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Buscar')}>
+            <Icon name="search" size={24} color="black" />
+            </TouchableOpacity>*/}
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publicar')}>
             <Icon name="plus-square" size={24} color="black" />
           </TouchableOpacity>
@@ -470,7 +535,27 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     position: 'relative',
-    marginTop: -40, 
+    marginTop: -0, 
+  },
+  searchButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 1,
+  },
+  filterContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 200, // Altura fija para el contenedor del filtro
+    backgroundColor: 'white',
+    zIndex: 2,
+    elevation: 5, // Añade sombra
+    paddingHorizontal: 10, // Ajuste de espaciado horizontal
+    paddingVertical: 20, // Ajuste de espaciado vertical
+    borderBottomWidth: 1, // Añade borde inferior
+    borderBottomColor: 'lightgray', // Color del borde inferior
   },
   scrollViewContent: {
     flexGrow: 1,
@@ -546,6 +631,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 20,
     marginTop: 20,
+  },
+  XButton: {
+    position: 'absolute',
+    top: 10, // Ajustar la posición superior según sea necesario
+    right: 10, // Ajustar la posición derecha según sea necesario
+    padding: 5,
+    backgroundColor: 'transparent', // Fondo transparente para el botón
+    borderRadius: 20, // Ajustar el radio de borde según sea necesario
   },
   ampliada: {
     width: '100%',

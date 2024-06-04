@@ -41,6 +41,17 @@ const Registro = ({ navigation }) => {
       return;
     }
 
+      // Validar que la contraseña tenga al menos una mayúscula, un número y 10 caracteres
+      const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{10,}$/;
+      if (!passwordRegex.test(password)) {
+        Alert.alert(
+          'Contraseña inválida',
+          'La contraseña debe tener al menos una letra mayúscula, un número y 10 caracteres.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+      
     try {
       const url = 'https://ropdat.onrender.com/api/register';
       const respuesta = await axios.post(url, {

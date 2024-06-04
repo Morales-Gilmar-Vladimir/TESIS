@@ -69,6 +69,7 @@ const EditarPublicacion = ({ route, navigation }) => {
 
     return () => backHandler.remove();
   }, [navigation, postId]);
+  
   const handleUpdate = async () => {
     try {
       const userToken = await AsyncStorage.getItem('token');
@@ -165,7 +166,6 @@ const EditarPublicacion = ({ route, navigation }) => {
           onValueChange={handleTemporadaChange}
           style={styles.picker}
         >
-          {showTemporadaSelectOption && <Picker.Item label="Seleccione una temporada" value={null} />}
           <Picker.Item label="Primavera" value="Primavera" />
           <Picker.Item label="Verano" value="Verano" />
           <Picker.Item label="Otoño" value="Otoño" />
@@ -181,7 +181,6 @@ const EditarPublicacion = ({ route, navigation }) => {
           onValueChange={handleEpocaChange}
           style={styles.picker}
         >
-          {showEpocaSelectOption && <Picker.Item label="Seleccione una época" value={null} />}
           <Picker.Item label="70's: 1970 - 1979" value="70's" />
           <Picker.Item label="80's: 1980 - 1989" value="80's" />
           <Picker.Item label="90's: 1990 - 1999" value="90's" />
@@ -198,7 +197,6 @@ const EditarPublicacion = ({ route, navigation }) => {
           selectedValue={genero}
           onValueChange={handleGeneroChange}
         >
-          {showGeneroSelectOption && <Picker.Item label="Seleccione a que género va dirigido" value={null} />}
           <Picker.Item label="Masculino" value="Masculino" />
           <Picker.Item label="Femenino" value="Femenino" />
           <Picker.Item label="Cualquier" value="Cualquier " />
@@ -211,7 +209,6 @@ const EditarPublicacion = ({ route, navigation }) => {
           selectedValue={estiloG}
           onValueChange={handleEstiloGChange}
         >
-          {showEstiloGSelectOption && <Picker.Item label="Seleccione un estilo" value={null} />}
           <Picker.Item label="Casual" value="Casual" />
           <Picker.Item label="Formal" value="Formal" />
           <Picker.Item label="Deportivo" value="Deportivo" />
