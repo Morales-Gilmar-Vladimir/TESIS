@@ -147,6 +147,7 @@ const EditarPublicacion = ({ route, navigation }) => {
   return (
     <View style={styles.container}>
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
+    <View style={{ height: 30 }} />
     <View style={styles.imageContainer}>
     {foto && <Image source={{ uri: foto }} style={styles.image} />}
     </View>
@@ -160,6 +161,7 @@ const EditarPublicacion = ({ route, navigation }) => {
         multiline
         numberOfLines={4}
       />
+      
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={temporada}
@@ -173,7 +175,7 @@ const EditarPublicacion = ({ route, navigation }) => {
           <Picker.Item label="Cualquier" value="Cualquier" />
         </Picker>
       </View>
-
+      <View style={{ height: 10 }} />
 
       <View style={styles.pickerContainer}>
         <Picker
@@ -190,7 +192,7 @@ const EditarPublicacion = ({ route, navigation }) => {
           <Picker.Item label="Cualquier" value="Cualquier" />
         </Picker>
       </View>
-
+      <View style={{ height: 10 }} />
       <View style={styles.pickerContainer}>
         <Picker
           style={styles.picker}
@@ -202,7 +204,7 @@ const EditarPublicacion = ({ route, navigation }) => {
           <Picker.Item label="Cualquier" value="Cualquier " />
         </Picker>
       </View>
-
+      <View style={{ height: 10 }} />
       <View style={styles.pickerContainer}>
         <Picker
           style={styles.picker}
@@ -221,7 +223,11 @@ const EditarPublicacion = ({ route, navigation }) => {
           <Picker.Item label="Otros" value="Otros" />
         </Picker>
       </View>
-      <Button title="Actualizar Publicación" onPress={handleUpdate} />
+      <View style={{ height: 10 }} />
+      <TouchableOpacity style={styles.button} onPress={handleUpdate}>
+        <Text style={styles.editButton}>Actualizar Publicación</Text>
+      </TouchableOpacity>
+   
     </ScrollView>
   </View>
   );
@@ -230,20 +236,41 @@ const EditarPublicacion = ({ route, navigation }) => {
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      padding: 20,
+      backgroundColor: '#fff',
+      
+      alignItems: 'center', 
+      flex: 1,
+      flexDirection: 'row',
+      position: 'relative',
+  
+    },
+    editButton: {
+      backgroundColor: '#d8e1fe',
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: 10,
+      marginTop: 10,
+      alignItems: 'center',
+      color: '#5450b5',
+      fontSize: 16,
+      fontWeight: 'bold'
     },
     scrollViewContent: {
       flexGrow: 1,
       paddingBottom: 100,
+      alignItems: 'center'
     },
     input: {
-      width: '100%',
-      height: 40,
-      borderColor: 'gray',
+      width: '80%',
+      height: "5.5%",
+      borderColor: '#f0f1f1',
       borderWidth: 1,
-      borderRadius: 5,
       marginBottom: 20,
       paddingHorizontal: 10,
+      borderRadius: 10,
+      backgroundColor: '#f0f1f1',
+      color: '#7c7c7c',
+      fontWeight: 'bold'
     },
     imageContainer: {
       alignItems: 'center',
@@ -252,6 +279,29 @@ const styles = StyleSheet.create({
         width: 280,
         height: 300,
         borderRadius: 10,
+    },
+    picker: {
+      height: "5.5%",
+      width: '100%',
+      backgroundColor: '#f0f1f1',
+      alignItems: 'center',
+      justifyContent: 'center', 
+      color: '#7c7c7c',
+      fontWeight: 'bold',
+      fontSize: 16,
+    },
+    pickerContainer: {
+      width: '80%',
+      backgroundColor: '#f0f1f1',
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: '#f0f1f1',
+      overflow: 'hidden',
+      alignItems: 'center',
+      justifyContent: 'center', 
+      marginBottom: 5,
+      color: '#7c7c7c',
+      fontWeight: 'bold'
     },
   });
   

@@ -6,16 +6,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+     backgroundColor: '#d8e1fe'
+    
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)', // Color de fondo semi-transparente
+    zIndex: 999, 
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    
   }, 
   label: {
     fontSize: 16,
     marginBottom: 5,
-    color: '#0F7BB5', 
+    color: '#5450b5', 
     textAlign: 'left',
     fontWeight: 'bold'
   },
@@ -47,25 +61,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    backgroundColor: '#d8e1fe'
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: '#5450b5'
   },
   input: {
     width: '100%',
     height: 50,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#f0f1f1',
     borderRadius: 5,
     paddingHorizontal: 10,
     marginBottom: 20,
+    backgroundColor: '#f0f1f1'
   },
   button: {
     width: '100%',
     height: 50,
-    backgroundColor: '#0F7BB5',
+    backgroundColor: '#5450b5',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
@@ -85,7 +102,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   loginButton: {
-    color: '#0F7BB5',
+    color: '#5450b5',
     textDecorationLine: 'underline',
   }, 
   registroContainer: {
@@ -98,7 +115,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   registroLink: {
-    color: '#0F7BB5',
+    color: '#5450b5',
     textDecorationLine: 'underline',
   }, 
   errorText: {
@@ -132,7 +149,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   termsLink: {
-    color: '#0F7BB5',
+    color: '#5450b5',
     textDecorationLine: 'underline',
     marginTop: 5,
   },

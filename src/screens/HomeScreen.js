@@ -24,6 +24,10 @@ const HomeScreen = ({ navigation }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [cuentaRestringida, setCuentaRestringida] = useState(false); // Estado para verificar si la cuenta está restringida
+
+
+
 
 // Función para cargar publicaciones, "Me gusta" y favoritos almacenados localmente
   const fetchData = async () => {
@@ -90,35 +94,47 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const handleLike = async (postId) => {
-    try {
-      const userToken = await AsyncStorage.getItem('token');
-      const response = await axios.put(`https://ropdat.onrender.com/api/publicacion/like/${postId}`, null, {
-        headers: {
-          Authorization: `Bearer ${userToken}`,
-        },
-      });
+  try {
+    const userToken = await AsyncStorage.getItem('token');
+    
+    const response = await axios.put(`https://ropdat.onrender.com/api/publicacion/like/${postId}`, null, {
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+      },
+    });
 
-      if (response.status === 200) {
-        const updatedLikedPosts = [...likedPosts, postId];
-        await AsyncStorage.setItem('likedPosts', JSON.stringify(updatedLikedPosts));
-        setLikedPosts(updatedLikedPosts);
-
-        const updatedPublicaciones = publicaciones.map((publicacion) =>
-          publicacion._id === postId ? { ...publicacion, likes: response.data.likes } : publicacion
-        );
-        setPublicaciones(updatedPublicaciones);
-
-        if (dislikedPosts.includes(postId)) {
-          await handleRemoveDislike(postId);
-        }
+    if (response.status === 200) {
+      // Verificar si la cuenta está restringida
+      if (response.data.msg === "Su cuenta esta restringida") {
+        // Muestra la alerta correspondiente si la cuenta está restringida       
+        Alert.alert('Cuenta restringida', 'Tu cuenta está restringida y no puedes interactuar.');
+        return; // Detener la ejecución de la función si la cuenta está restringida
       }
-    } catch (error) {
-      console.error('Error al dar me gusta:', error);
-      Alert.alert('Error', 'Hubo un problema al dar me gusta a esta imagen.');
-    }
-  };
 
-  const handleRemoveLike = async (postId) => {
+      const updatedLikedPosts = [...likedPosts, postId];
+      await AsyncStorage.setItem('likedPosts', JSON.stringify(updatedLikedPosts));
+      setLikedPosts(updatedLikedPosts);
+
+      const updatedPublicaciones = publicaciones.map((publicacion) =>
+        publicacion._id === postId ? { ...publicacion, likes: response.data.likes } : publicacion
+      );
+      setPublicaciones(updatedPublicaciones);
+
+      if (dislikedPosts.includes(postId)) {
+        await handleRemoveDislike(postId);
+      }
+    }
+  } catch (error) {
+    console.error('Error al dar me gusta:', error);
+    Alert.alert('Error', 'Hubo un problema al dar me gusta a esta imagen.');
+  }
+};
+
+  
+  
+
+const handleRemoveLike = async (postId) => {
+  
     try {
       const userToken = await AsyncStorage.getItem('token');
       const response = await axios.put(`https://ropdat.onrender.com/api/publicacion/likeEliminar/${postId}`, null, {
@@ -128,6 +144,14 @@ const HomeScreen = ({ navigation }) => {
       });
 
       if (response.status === 200) {
+
+        // Verificar si la cuenta está restringida
+        if (response.data.msg === "Su cuenta esta restringida") {
+          // Muestra la alerta correspondiente si la cuenta está restringida       
+          Alert.alert('Cuenta restringida', 'Tu cuenta está restringida y no puedes interactuar.');
+          return; // Detener la ejecución de la función si la cuenta está restringida
+        }
+
         const updatedLikedPosts = likedPosts.filter((likedPostId) => likedPostId !== postId);
         await AsyncStorage.setItem('likedPosts', JSON.stringify(updatedLikedPosts));
         setLikedPosts(updatedLikedPosts);
@@ -141,7 +165,7 @@ const HomeScreen = ({ navigation }) => {
       console.error('Error al quitar me gusta:', error);
       Alert.alert('Error', 'Hubo un problema al quitar me gusta a esta imagen.');
     }
-  };
+};
 
   const handleDislike = async (postId) => {
     try {
@@ -153,6 +177,13 @@ const HomeScreen = ({ navigation }) => {
       });
 
       if (response.status === 200) {
+
+        if (response.data.msg === "Su cuenta esta restringida") {
+          // Muestra la alerta correspondiente si la cuenta está restringida       
+          Alert.alert('Cuenta restringida', 'Tu cuenta está restringida y no puedes interactuar.');
+          return; // Detener la ejecución de la función si la cuenta está restringida
+        }
+
         const updatedDislikedPosts = [...dislikedPosts, postId];
         await AsyncStorage.setItem('dislikedPosts', JSON.stringify(updatedDislikedPosts));
         setDislikedPosts(updatedDislikedPosts);
@@ -182,6 +213,12 @@ const HomeScreen = ({ navigation }) => {
       });
 
       if (response.status === 200) {
+        if (response.data.msg === "Su cuenta esta restringida") {
+          // Muestra la alerta correspondiente si la cuenta está restringida       
+          Alert.alert('Cuenta restringida', 'Tu cuenta está restringida y no puedes interactuar.');
+          return; // Detener la ejecución de la función si la cuenta está restringida
+        }
+
         const updatedDislikedPosts = dislikedPosts.filter((dislikedPostId) => dislikedPostId !== postId);
         await AsyncStorage.setItem('dislikedPosts', JSON.stringify(updatedDislikedPosts));
         setDislikedPosts(updatedDislikedPosts);
@@ -216,6 +253,13 @@ const HomeScreen = ({ navigation }) => {
       );
   
       if (response.status === 200) {
+
+        if (response.data.msg === "Su cuenta esta restringida") {
+          // Muestra la alerta correspondiente si la cuenta está restringida       
+          Alert.alert('Cuenta restringida', 'Tu cuenta está restringida y no puedes interactuar.');
+          return; // Detener la ejecución de la función si la cuenta está restringida
+        }
+
         // Verificar si la publicación ya está en favoritos
         const alreadyInFavorites = favoritePosts.includes(postId);
   
@@ -267,6 +311,12 @@ const HomeScreen = ({ navigation }) => {
       );
 
       if (response.status === 200) {
+        if (response.data.msg === "Su cuenta esta restringida") {
+          // Muestra la alerta correspondiente si la cuenta está restringida       
+          Alert.alert('Cuenta restringida', 'Tu cuenta está restringida y no puedes interactuar.');
+          return; // Detener la ejecución de la función si la cuenta está restringida
+        }
+
         Alert.alert('Reporte enviado', 'Tu reporte ha sido enviado correctamente.');
         setReporteModalVisible(false);
         setMotivo('');
@@ -351,15 +401,8 @@ useEffect(() => {
     loadFavorites();
   }, []);
 
-
-  const handleSearch = (searchText) => {
-    setSearching(true); // Iniciar búsqueda
-    const filteredPosts = publicaciones.filter((publicacion) =>
-      publicacion.titulo.toLowerCase().includes(searchText.toLowerCase()) ||
-      publicacion.descripcion.toLowerCase().includes(searchText.toLowerCase())
-    );
-    setPublicacionesFiltradas(filteredPosts);
-    setSearching(false); // Terminar búsqueda
+  const cerrarBusqueda = () => {
+    setSearching(false);
   };
 
 
@@ -381,14 +424,18 @@ useEffect(() => {
         </View>
         <View style={{ height: 70 }} />
       </ScrollView>  
+      
+      <TouchableOpacity style={styles.clearButton} onPress={fetchData}>
+          <Text style={styles.buttonText}>Limpiar Filtro</Text>
+        </TouchableOpacity>
       <TouchableOpacity style={styles.searchButton} onPress={() => setSearching(true)}>
-        <Icon name="search" size={20} color="black" />
+        <Icon name="search" size={20} color="#5450b5" />
       </TouchableOpacity>
       {searching && (
         <View style={styles.filterContainer}>
-          <Buscar buscarPublicaciones={setPublicaciones} />
-          <TouchableOpacity style={styles.XButton} onPress={() => setSearching(false)}>
-            <Icon name="times" size={20} color="black" />
+          <Buscar buscarPublicaciones={setPublicaciones} onSearchComplete={cerrarBusqueda}  />
+          <TouchableOpacity style={styles.XButton} onPress={cerrarBusqueda}>
+            <Icon name="times" size={20} color="#5450b5" />
           </TouchableOpacity>
         </View>
       )} 
@@ -430,7 +477,7 @@ useEffect(() => {
                 }
               }}
             >
-              <Icon name="thumbs-up" size={30} color={selectedPost && likedPosts.includes(selectedPost._id) ? 'blue' : 'black'} />
+              <Icon name="thumbs-up" size={30} color={selectedPost && likedPosts.includes(selectedPost._id) ? 'blue' : '#5450b5'} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -447,19 +494,17 @@ useEffect(() => {
                 }
               }}
             >
-              <Icon name="thumbs-down" size={30} color={selectedPost && dislikedPosts.includes(selectedPost._id) ? 'red' : 'black'} />
+              <Icon name="thumbs-down" size={30} color={selectedPost && dislikedPosts.includes(selectedPost._id) ? 'red' : '#5450b5'} />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.button} onPress={handleReport}>
-              <Icon name="exclamation-circle" size={30} color="black" />
+              <Icon name="warning" size={30} color="#5450b5" />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.button}
               onPress={async () => {
                 if (selectedPost && selectedPost._id) {
                   await handleAddToFavorites(selectedPost._id);
-
-                  // No es necesario llamar a fetchData aquí
                 } else {
                   console.error('No se ha seleccionado ninguna publicación');
                 }
@@ -468,7 +513,7 @@ useEffect(() => {
               <Icon
                 name="star"
                 size={30}
-                color={selectedPost && favoritePosts.includes(selectedPost._id) ? 'yellow' : 'black'}
+                color={selectedPost && favoritePosts.includes(selectedPost._id) ? 'yellow' : '#5450b5'}
               />
             </TouchableOpacity>
 
@@ -479,16 +524,16 @@ useEffect(() => {
       <View style={styles.fixedButtonsContainer}>
         <View style={styles.buttonsContainer}>
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
-            <Icon name="home" size={24} color="black" />
+            <Icon name="home" size={24} color="#5450b5" />
           </TouchableOpacity>
           {/*<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Buscar')}>
             <Icon name="search" size={24} color="black" />
             </TouchableOpacity>*/}
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publicar')}>
-            <Icon name="plus-square" size={24} color="black" />
+            <Icon name="plus-square" size={24} color="#5450b5" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
-            <Icon name="user" size={24} color="black" />
+            <Icon name="user" size={24} color="#5450b5" />
           </TouchableOpacity>
         </View>
       </View>
@@ -500,31 +545,40 @@ useEffect(() => {
         onRequestClose={handleReporteClose}
       >
         <View style={styles.modalContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Motivo"
-          placeholderTextColor="white"
-          value={motivo}
-          onChangeText={text => setMotivo(text.replace(/\n/g, '').slice(0, 70))}
-          maxLength={70}
-          multiline={false}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Detalle"
-          placeholderTextColor="white"
-          value={detalle}
-          onChangeText={text => setDetalle(text.replace(/\n/g, '').slice(0, 70))}
-          maxLength={70}
-          multiline={false}
-        />
-          <TouchableOpacity onPress={handleReportSubmit}>
-            <Text style={styles.submitButton}>Enviar Reporte</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleReporteClose}>
-            <Text style={styles.closeButton}>Cerrar</Text>
-          </TouchableOpacity>
-        </View>
+                <Text style={styles.reportModalTitle}>Reportar Publicación</Text>
+               
+                <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={motivo}
+                  onValueChange={(itemValue) => setMotivo(itemValue)}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Seleccionar motivo" value="" />
+                  <Picker.Item label="Contenido inapropiado" value="Contenido inapropiado" />
+                  <Picker.Item label="Spam" value="Spam" />
+                  <Picker.Item label="Acoso" value="Acoso" />
+                  <Picker.Item label="Otro" value="Otro" />
+                </Picker>
+                </View>
+                <View style={{ height: 15}} />
+
+            
+                <TextInput
+                  style={styles.input}
+                  placeholder="Detalle"
+                  value={detalle}
+                  onChangeText={text => setDetalle(text.replace(/\n/g, '').slice(0, 70))}
+                  maxLength={70}
+                  multiline={false}
+                />
+
+                   <TouchableOpacity onPress={handleReportSubmit}>
+                    <Text style={styles.submitButton}>Enviar Reporte</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleReporteClose}>
+                    <Text style={styles.closeButton}>Cancelar</Text>
+                  </TouchableOpacity>
+              </View>
       </Modal>
     </View>
   );
@@ -537,6 +591,56 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginTop: -0, 
   },
+  clearButton: {
+    position: 'absolute',
+    top: 10,
+    left: 10, // Alinear a la izquierda
+    zIndex: 1,
+    //padding: 1,
+    //backgroundColor: '#d8e1fe',
+    alignItems: 'center',
+    color: '#5450b5',
+   // borderRadius: 10, // Añadir bordes
+    //borderWidth: 1, // Añadir bordes
+    //borderColor: '#d8e1fe', // Añadir bordes
+  },
+  picker: {
+    height: 50, // Aumentar la altura
+    width: '100%',
+    backgroundColor: '#f0f1f1',
+    alignItems: 'center',
+    justifyContent: 'center', 
+    color: '#7c7c7c',
+    fontWeight: 'bold',
+    fontSize: 18, // Aumentar el tamaño de fuente
+  },
+  reportModalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: "white"
+  },
+  buttonText: {
+    fontSize: 15,
+    color: '#5450b5',
+    fontWeight: 'bold',
+    
+  },
+
+  pickerContainer: {
+  width: '80%',
+      backgroundColor: '#f0f1f1',
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: '#ccc',
+      overflow: 'hidden',
+      alignItems: 'center', // Centra horizontalmente
+      justifyContent: 'center', // Centra verticalmente
+      marginBottom: 5,
+      color: '#7c7c7c',
+      fontWeight: 'bold'
+  },
+
   searchButton: {
     position: 'absolute',
     top: 10,
@@ -653,6 +757,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
+    
   },
   buttonsContainer: {
     flexDirection: 'row',
@@ -696,20 +801,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   input: {
-    width: '80%',
-    height: 40,
-    borderColor: 'gray',
+    width: 360, // Tamaño fijo para el ancho del input
+    height: 50, // Tamaño fijo para la altura del input
+    borderColor: '#f0f1f1',
     borderWidth: 1,
     marginBottom: 20,
     paddingHorizontal: 10,
     borderRadius: 10,
-    backgroundColor: 'gray',
-    color: 'white',
+    backgroundColor: '#f0f1f1',
+    color: '#7c7c7c',
+    //fontWeight: 'bold',
+    fontSize: 17
   },
   submitButton: {
-    color: 'white',
-    fontSize: 18,
-    marginTop: 20,
+    color: '#5450b5', // Color del texto
+    fontSize: 16,   // Tamaño de la fuente
+    fontWeight: 'bold', // Grosor de la fuente
+    backgroundColor: '#d8e1fe', // Color de fondo del texto
+    paddingVertical: 10, // Espaciado vertical dentro del texto
+    paddingHorizontal: 20, // Espaciado horizontal dentro del texto
+    borderRadius: 10, // Radio de borde para redondear las esquinas
   },
 });
 

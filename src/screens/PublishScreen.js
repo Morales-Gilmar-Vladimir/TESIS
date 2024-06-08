@@ -150,6 +150,12 @@ const handleBackPress = () => {
       const response = await axios.post('https://ropdat.onrender.com/api/publicar', formData, config);
   
       if (response.status === 200) {
+        if (response.data.msg === "Su cuenta esta restringida") {
+          // Muestra la alerta correspondiente si la cuenta está restringida       
+          Alert.alert('Cuenta restringida', 'Tu cuenta está restringida y no puedes interactuar.');
+          return; // Detener la ejecución de la función si la cuenta está restringida
+        }
+
         Alert.alert('Éxito', 'Publicación realizada correctamente');
         setSelectedImageUri(null);
         setDescripcion('');
@@ -213,6 +219,7 @@ const handleEstiloGChange = (value) => {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <View style={{ height: 30 }} />
         {selectedImageUri && (
           <TouchableOpacity style={styles.imageContainer} onPress={pickImageFromGallery}>
             <Image source={{ uri: selectedImageUri }} style={styles.image} />
@@ -227,10 +234,6 @@ const handleEstiloGChange = (value) => {
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity style={styles.button} onPress={pickImageFromGallery}>
-          <Text style={styles.buttonText}>Seleccionar imagen</Text>
-        </TouchableOpacity>
-
       <TextInput
         style={styles.input}
         placeholder="Descripción"
@@ -240,6 +243,7 @@ const handleEstiloGChange = (value) => {
         multiline
         numberOfLines={4}
       />
+      
        <View style={styles.pickerContainer}>
         <Picker
           selectedValue={temporada}
@@ -255,7 +259,7 @@ const handleEstiloGChange = (value) => {
         </Picker>
       </View>
 
-
+      <View style={{ height: 10 }} />
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={epoca}
@@ -272,7 +276,7 @@ const handleEstiloGChange = (value) => {
           <Picker.Item label="Cualquier" value="Cualquier" />
         </Picker>
       </View>
-
+      <View style={{ height: 10 }} />
       <View style={styles.pickerContainer}>
         <Picker
           style={styles.picker}
@@ -285,7 +289,7 @@ const handleEstiloGChange = (value) => {
           <Picker.Item label="Cualquier" value="Cualquier " />
         </Picker>
       </View>
-
+      <View style={{ height: 10 }} />
       <View style={styles.pickerContainer}>
         <Picker
           style={styles.picker}
@@ -305,25 +309,23 @@ const handleEstiloGChange = (value) => {
           <Picker.Item label="Otros" value="Otros" />
         </Picker>
       </View>
-            
+      <View style={{ height: 30 }} />
          <TouchableOpacity style={styles.publishButton} onPress={publishPost}>
           <Text style={styles.buttonText}>Publicar</Text>
         </TouchableOpacity>
-
-        <View style={{ height: 50 }} />
-        
+        <View style={{ height: 10 }} />
       </ScrollView>
 
       <View style={styles.fixedButtonsContainer}>
         <View style={styles.buttonsContainer}>
           <TouchableOpacity style={styles.button} onPress={navigateToHome}>
-            <Icon name="home" size={24} color="black" />
+            <Icon name="home" size={24} color="#5450b5" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publicar')}>
-            <Icon name="plus-square" size={24} color="black" />
+            <Icon name="plus-square" size={24} color="#5450b5" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Perfil')}>
-            <Icon name="user" size={24} color="black" />
+            <Icon name="user" size={24} color="#5450b5" />
           </TouchableOpacity>
         </View>
       </View>
@@ -343,30 +345,38 @@ const styles = StyleSheet.create({
 
   },
   picker: {
-    height: 50,
+    height: "5.5%",
     width: '100%',
-    backgroundColor: 'transparent',
+    backgroundColor: '#f0f1f1',
     alignItems: 'center',
     justifyContent: 'center', 
+    color: '#7c7c7c',
+    fontWeight: 'bold',
+    fontSize: 16,
+   
   },
   pickerContainer: {
     width: '80%',
-    backgroundColor: '#fff',
+    backgroundColor: '#f0f1f1',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'black',
+    borderColor: '#f0f1f1',
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center', 
     marginBottom: 5,
+    color: '#7c7c7c',
+    fontWeight: 'bold'
   },
+  
   scrollViewContent: {
     flexGrow: 1,
-    paddingBottom: 100,
+    paddingBottom: 25,
     alignItems: 'center'
   },
   imageContainer: {
     marginBottom: 20,
+     backgroundColor: '#f0f1f1',
     alignItems: 'center',
   },
   image: {
@@ -378,7 +388,7 @@ const styles = StyleSheet.create({
     width: 280,
     height: 350,
     borderRadius: 10,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#f0f1f1',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -387,25 +397,29 @@ const styles = StyleSheet.create({
     color: 'gray',
   },
   buttonText: {
-    color: 'white',
+    color: '#5450b5',
     fontSize: 16,
     justifyContent: 'center',
+    fontWeight: 'bold',
   },
   input: {
     width: '80%',
-    height: 50,
-    borderColor: 'gray',
+    height: "5.5%",
+    borderColor: '#f0f1f1',
     borderWidth: 1,
-    borderRadius: 5,
     marginBottom: 20,
     paddingHorizontal: 10,
-    alignSelf: 'center',
+    borderRadius: 10,
+    backgroundColor: '#f0f1f1',
+    color: '#7c7c7c',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   publishButton: {
-    backgroundColor: '#0F7BB5',
+    backgroundColor: '#d8e1fe',
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 5,
+    borderRadius: 10,
     marginBottom: 20,
     alignSelf: 'center',
   },

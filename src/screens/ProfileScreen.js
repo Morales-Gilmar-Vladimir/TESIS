@@ -20,8 +20,10 @@ const ProfileScreen = ({ navigation }) => {
   const [favoritos, setFavoritos] = useState([]);
   const [section, setSection] = useState('publicaciones');
   const [favoritePosts, setFavoritePosts] = useState([]);
-
-
+  const [nombre, setNombre] = useState('');
+  const [apellido, setApellido] = useState('');
+  const [descripcion, setDescripcion] = useState('');
+  const [editProfileModalVisible, setEditProfileModalVisible] = useState(false); 
   
   useFocusEffect(
     React.useCallback(() => {
@@ -40,7 +42,7 @@ const ProfileScreen = ({ navigation }) => {
        setFavoritos([]);
        setEditandoDescripcion(false);
        setFavoritePosts([]);
-
+       setDescripcion('');
  
        // Cargar la información del usuario al enfocar la pantalla
        fetchUserData();
@@ -101,23 +103,26 @@ const ProfileScreen = ({ navigation }) => {
       const userData = responseUserData.data.UsuarioBDD;
       setUserData(userData);
       setDescripcionEditable(userData.descripcion); // Establecer la descripción editable inicialmente
+      setNombre(userData.nombre);
+      setApellido(userData.apellido);
+      setDescripcion(userData.descripcion);
       const userPosts = responseUserData.data.publicacionBDD;
       setPublicaciones(userPosts);
       fetchFavoritos(userId, userToken);
-  
+      
       console.log('Datos del usuario y publicaciones cargados correctamente');
     } catch (error) {
       console.error('Error al obtener la información del perfil:', error);
     }
   };
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////
   const handleDescripcionChange = (text) => {
     const newText = text.slice(0, 70); 
     const lines = newText.split('\n');
     if (lines.length > 2) {
-      setDescripcionTemporal(lines.slice(0, 2).join('\n'));
+      setDescripcion(lines.slice(0, 2).join('\n'));
     } else {
-      setDescripcionTemporal(newText);
+      setDescripcion(newText);
     }
   };
 
@@ -152,8 +157,42 @@ const ProfileScreen = ({ navigation }) => {
       console.error('Error al actualizar la descripción:', error);
       Alert.alert('Error', 'Se produjo un error al intentar actualizar la descripción. Por favor, inténtalo de nuevo más tarde.');
     }
+
   };
   
+  const handleEditProfile = () => {
+    setEditProfileModalVisible(true);
+
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      const userToken = await AsyncStorage.getItem('token');
+      const userId = await AsyncStorage.getItem('_id');
+      const response = await axios.put(`https://ropdat.onrender.com/api/usuario/${userId}`, {
+        nombre,
+        apellido,
+        descripcion,
+      }, {
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+
+      if (response.status === 200) {
+        fetchUserData();
+        setEditProfileModalVisible(false);
+        Alert.alert('Perfil actualizado', 'Tu perfil se ha actualizado correctamente.');
+      } else {
+        throw new Error('Error al actualizar el perfil');
+      }
+    } catch (error) {
+      console.error('Error al actualizar el perfil:', error);
+      Alert.alert('Error', 'Hubo un problema al actualizar tu perfil. Inténtalo de nuevo más tarde.');
+    }
+  };
+
+  
+  
+  /////////////////////////////////////////////////////////
   const selectProfileImage = async () => {
     try {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -257,11 +296,6 @@ const handleImagePress = (url, post) => {
   }
 };
 
-const renderImageItem = (image, post) => (
-  <TouchableOpacity key={image} onPress={() => handleImagePress(image, post)}>
-    <Image source={{ uri: image }} style={styles.postImage} />
-  </TouchableOpacity>
-);
 
 const handleLogout = async () => {
   try {
@@ -381,7 +415,7 @@ return (
     <ScrollView contentContainerStyle={styles.profileContainer}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.optionsButton} onPress={handleLogout}>
-          <Icon name="sign-out" size={24} color="black" />
+          <Icon name="sign-out" size={24} color="#5450b5" />
         </TouchableOpacity>
       </View>
       {userData && (
@@ -414,44 +448,29 @@ return (
               )}
             </TouchableOpacity>
           </View>
+
           <View style={styles.userDataContainer}>
-            <Text style={styles.username}>{userData.nombre}</Text>
-            {editandoDescripcion ? (
-              <>
-                <TextInput
-                  style={styles.descriptionTextInput}
-                  value={descripcionTemporal}
-                  onChangeText={handleDescripcionChange}
-                  placeholder="Ingresa tu descripción..."
-                  multiline
-                  maxLength={70}
-                  numberOfLines={4}
-                />
-                <Button title="Guardar Descripción" onPress={handleGuardarDescripcion} />
-              </>
-            ) : (
-              <>
-                <Text style={styles.description}>{descripcionEditable}</Text>
-                <TouchableOpacity onPress={() => setEditandoDescripcion(true)}>
-                  <Text style={styles.editButton}>Editar descripción</Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
+              <Text style={styles.username}>{userData.nombre}</Text>
+              <Text style={styles.description}>{descripcionEditable}</Text>
+              <TouchableOpacity onPress={handleEditProfile}>
+                <Text style={styles.editButton}>Editar perfil</Text>
+              </TouchableOpacity>
+            </View>
+
         </>
       )}
       <View style={styles.sectionSelector}>
         <TouchableOpacity onPress={() => handleSectionChange('publicaciones')}>
           <View style={styles.sectionContainer}>
             <Text style={[styles.sectionTitle, section === 'publicaciones' && styles.activeSectionTitle]}>
-              <Icon name="image" size={20} color={section === 'publicaciones' ? '#fff' : '#000'} />  Publicaciones
+              <Icon name="image" size={20} color={section === 'publicaciones' ? '#5450b5' : 'white'} />  Publicaciones
             </Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => handleSectionChange('favoritos')}>
           <View style={styles.sectionContainer}>
             <Text style={[styles.sectionTitle, section === 'favoritos' && styles.activeSectionTitle]}>
-              <Icon name="bookmark" size={20} color={section === 'favoritos' ? 'white' : 'black'} />     Favoritos
+              <Icon name="bookmark" size={20} color={section === 'favoritos' ? '#5450b5' : 'white'} />      Favoritos
             </Text>
           </View>
         </TouchableOpacity>
@@ -483,7 +502,11 @@ return (
         )}
 
         {((section === 'publicaciones' && publicaciones.length === 0) || (section === 'favoritos' && (!favoritos || favoritos.length === 0))) && (
-          <Text>No hay {section === 'publicaciones' ? 'publicaciones' : 'favoritos'}</Text>
+         <View style={styles.textContainer}>
+         <Text style={styles.text}>
+           No hay {section === 'publicaciones' ? 'publicaciones' : 'favoritos'}
+         </Text>
+       </View>
         )}
       </View>
       <View style={{ height: 50 }} />
@@ -491,16 +514,75 @@ return (
     <View style={styles.fixedButtonsContainer}>
       <View style={styles.buttonsContainer}>
         <TouchableOpacity style={styles.button} onPress={navigateToHome}>
-          <Icon name="home" size={24} color="black" />
+          <Icon name="home" size={24} color="#5450b5" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publicar')}>
-          <Icon name="plus-square" size={24} color="black" />
+          <Icon name="plus-square" size={24} color="#5450b5" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Perfil')}>
-          <Icon name="user" size={24} color="black" />
+          <Icon name="user" size={24} color="#5450b5" />
         </TouchableOpacity>
       </View>
     </View>
+
+    <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible || editProfileModalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+          setEditProfileModalVisible(false);
+        }}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity onPress={() => {
+            setModalVisible(false);
+            setEditProfileModalVisible(false);
+          }}>
+            <Text style={styles.closeButton}>Cerrar</Text>
+          </TouchableOpacity>
+          {editProfileModalVisible && (
+            <View style={styles.editProfileContainer}>
+              <Text style={styles.editProfileTitle}>Editar Perfil</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Nombre"
+                value={nombre}
+                onChangeText={(text) => setNombre(text.slice(0, 15))}
+                maxLength={15} // Máximo de 15 caracteres
+                multiline={false} // No permite saltos de línea
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Apellido"
+                value={apellido}
+                onChangeText={(text) => setApellido(text.slice(0, 15))}
+                maxLength={15} // Máximo de 15 caracteres
+                multiline={false} // No permite saltos de línea
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Descripción"
+                value={descripcion}
+                onChangeText={handleDescripcionChange}
+                //onChangeText={setDescripcion}
+                multiline
+                maxLength={70}
+                numberOfLines={4}     
+              />
+              <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>
+                <Text style={styles.saveButtonText}>Guardar</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </Modal>
+
+
+
+
+
+
     <Modal
       animationType="slide"
       transparent={true}
@@ -524,7 +606,8 @@ return (
               style={styles.ampliada}
             />
             <View style={styles.postInfoContainer}>
-              <Text style={styles.imageName}>{selectedPost._id}</Text>
+              {/* <Text style={styles.imageName}>{selectedPost._id}</Text> */}
+              <Text style={styles.Description}>Descripcion:</Text>
               <Text style={styles.imageDescription}>{selectedPost.descripcion}</Text>
               <TouchableOpacity style={styles.button} onPress={handleEdit}>
                 <Text style={styles.buttonText}>Editar</Text>
@@ -542,7 +625,8 @@ return (
               style={styles.ampliada}
             />
             <View style={styles.postInfoContainer}>
-              <Text style={styles.imageName}>{selectedFavorito._id}</Text>
+              {/* <Text style={styles.imageName}>{selectedFavorito._id}</Text> */}
+              <Text style={styles.Description}>Descripcion:</Text>
               <Text style={styles.imageDescription}>{selectedFavorito.descripcion}</Text>
               <TouchableOpacity style={styles.button} onPress={() => handleRemoveFromFavorites(selectedFavorito._id)}>
                 <Text style={styles.buttonText}>Eliminar de Favoritos</Text>
@@ -561,9 +645,43 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  textContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#5450b5', // Color de texto deseado
+    fontWeight: 'bold'
+  },
+  input: {
+    width: '100%',
+    borderColor: '#f0f1f1',
+    backgroundColor: '#f0f1f1',
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 5,
+    marginBottom: 10,
+    textAlignVertical: 'center', // Alinea verticalmente en el centro
+  },
+  saveButton: {
+    backgroundColor: '#d8e1fe',
+    padding: 10,
+    borderRadius: 5,
+    width: '100%',
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: '#5450b5',
+    fontSize: 18,
+    fontWeight: 'bold'
+  },
   profileContainer: {
     paddingBottom: 20,
     flexGrow: 1,
+    
   },
   header: {
     flexDirection: 'row',
@@ -571,17 +689,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 10,
   },
+  buttonText: {
+    backgroundColor: '#d8e1fe',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginTop: 10,
+    color: '#5450b5',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center', // Alinea el texto horizontalmente en el centro
+    textAlignVertical: 'center', // Alinea el texto verticalmente en el centro
+  },
   optionsButton: {
     padding: 5,
   },
   profilePictureContainer: {
     alignItems: 'center',
     marginBottom: 20,
+    justifyContent: 'center',
+    flexDirection: 'row',
+   // backgroundColor: '#d8e1fe'
   },
   profilePicture: {
     width: 150,
     height: 150,
     borderRadius: 75,
+    flexDirection: 'row', // Asegura que el contenido esté en una fila
+    justifyContent: 'center', // Alinea el contenido en el centro horizontalmente
   },
   userDataContainer: {
     marginBottom: 20,
@@ -625,17 +760,35 @@ const styles = StyleSheet.create({
   },
   imageDescription: {
     fontSize: 16,
+    alignItems: 'center', // Alinea el contenido en el centro horizontalmente
+    textAlign: 'center', // Alinea el texto horizontalmente en el centro
+    textAlignVertical: 'center', // Alinea el texto verticalmente en el centro
+   
+  },  
+  Description: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    alignItems: 'center', // Alinea el contenido en el centro horizontalmente
+    textAlign: 'center', // Alinea el texto horizontalmente en el centro
+    textAlignVertical: 'center', // Alinea el texto verticalmente en el centro
+   
   },
   confirmButton: {
-    backgroundColor: 'blue',
+    backgroundColor: '#d8e1fe',
     padding: 10,
     borderRadius: 5,
     marginTop: 10,
     alignItems: 'center',
+    color: '#5450b5',
+    alignItems: 'center', // Alinea el contenido en el centro horizontalmente
+    justifyContent: 'center', 
   },
   confirmButtonText: {
-    color: 'white',
+    color: '#5450b5',
     fontSize: 16,
+    fontWeight: 'bold',
+    alignItems: 'center', // Alinea el contenido en el centro horizontalmente
+    justifyContent: 'center', 
   },
   fixedButtonsContainer: {
     position: 'absolute',
@@ -672,28 +825,42 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     marginBottom: 10,
+    fontWeight: 'bold'
   },
   ampliada: {
     width: 300,
     height: 300,
     resizeMode: 'contain',
   },
+  editProfileContainer: {
+    width: '80%',
+    backgroundColor: '#d8e1fe',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  editProfileTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
   postInfoContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: '#f0f1f1',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
     marginTop: 20,
   },
   editButton: {
-    backgroundColor: '#0F7BB5',
+    backgroundColor: '#d8e1fe',
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 5,
+    borderRadius: 10,
     marginTop: 10,
     alignItems: 'center',
-    color: 'white',
+    color: '#5450b5',
     fontSize: 16,
+    fontWeight: 'bold'
   },
   editButtonText: {
     color: 'white',
@@ -703,31 +870,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: '#d8e1fe',
+
   },
   sectionContainer: {
-    padding: 10,
+    width: '78%', // Porcentaje del ancho del padre
+    height: 45, // Altura fija
+    padding: "2%",
     marginBottom: 20,
-    backgroundColor: '#0F7BB5',
+    backgroundColor: '#d8e1fe',
     borderRadius: 10,
-    shadowColor: 'white',
+    shadowColor: '#5450b5',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.20,
     shadowRadius: 3.84,
-    elevation: 10,
-    color: 'white',
-    marginHorizontal: 35,
-    alignItems: 'center', 
+    color:'#5450b5',
+    marginHorizontal: 25,
+    flexDirection: 'row', 
+    alignItems: 'center',
     
   },
   
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#5450b5',
     textAlign: 'center',
-    marginHorizontal: 35,
-   
+    marginLeft: 20,
+    marginHorizontal: 25,
   },
   
 });
