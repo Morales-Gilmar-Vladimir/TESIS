@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Alert, TextInput, ScrollView, Platform, BackHandler} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Alert, TextInput, ScrollView, Platform, BackHandler, ActivityIndicator} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -21,7 +21,7 @@ const PublishScreen = ({ navigation }) => {
   const [showEpocaSelectOption, setShowEpocaSelectOption] = useState(true);
   const [showGeneroSelectOption, setShowGeneroSelectOption] = useState(true);
   const [showEstiloGSelectOption, setShowEstiloGSelectOption] = useState(true);
-
+  const [loading, setLoading] = useState(false);
   
   useFocusEffect(
     React.useCallback(() => {
@@ -38,6 +38,7 @@ const PublishScreen = ({ navigation }) => {
         setShowEpocaSelectOption(true);
         setShowGeneroSelectOption(true);
         setShowEstiloGSelectOption(true);
+        setLoading(false);
       };
 
       cleanUpStates();
@@ -100,6 +101,7 @@ const handleBackPress = () => {
   };
 
   const publishPost = async () => {
+    setLoading(true);
     try {
       const userId = await AsyncStorage.getItem('_id');
       const userToken = await AsyncStorage.getItem('token');
@@ -107,6 +109,7 @@ const handleBackPress = () => {
       if (!selectedImageUri) {
         console.log('Error: Imagen no seleccionada');
         Alert.alert('Error', 'Debes seleccionar una imagen');
+        setLoading(false); // Detener el indicador de carga
         return;
       }
       
@@ -172,6 +175,7 @@ const handleBackPress = () => {
       console.error('Error al publicar:', error);
       Alert.alert('Error', 'Hubo un problema al publicar');
     }
+    setLoading(false); // Detener el indicador de carga
   };
   
   
@@ -219,6 +223,11 @@ const handleEstiloGChange = (value) => {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
+          {loading && ( // Mostrar indicador de carga si loading es true
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#5450b5" />
+            </View>
+          )}
       <View style={{ height: 30 }} />
         {selectedImageUri && (
           <TouchableOpacity style={styles.imageContainer} onPress={pickImageFromGallery}>
@@ -343,6 +352,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     position: 'relative',
 
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)', // Color de fondo semi-transparente
+    zIndex: 999, 
   },
   picker: {
     height: "5.5%",

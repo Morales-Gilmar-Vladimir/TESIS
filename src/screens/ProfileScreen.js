@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Image,Button  ,TextInput, StyleSheet, TouchableOpacity, BackHandler, Modal, Alert } from 'react-native';
+import { View, Text, ScrollView, Image,Button  ,TextInput, StyleSheet, TouchableOpacity, BackHandler, Modal, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -24,6 +24,9 @@ const ProfileScreen = ({ navigation }) => {
   const [apellido, setApellido] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [editProfileModalVisible, setEditProfileModalVisible] = useState(false); 
+  const [favoritosModalVisible, setFavoritosModalVisible] = useState(false);
+  const [selectedFavorito, setSelectedFavorito] = useState(null);
+  const [loading, setLoading] = useState(false);
   
   useFocusEffect(
     React.useCallback(() => {
@@ -43,6 +46,7 @@ const ProfileScreen = ({ navigation }) => {
        setEditandoDescripcion(false);
        setFavoritePosts([]);
        setDescripcion('');
+       setLoading(false);
  
        // Cargar la información del usuario al enfocar la pantalla
        fetchUserData();
@@ -76,6 +80,7 @@ const ProfileScreen = ({ navigation }) => {
   
 
   const fetchUserData = async () => {
+    setLoading(true);
     try {
       const userToken = await AsyncStorage.getItem('token');
       if (!userToken) {
@@ -114,6 +119,7 @@ const ProfileScreen = ({ navigation }) => {
     } catch (error) {
       console.error('Error al obtener la información del perfil:', error);
     }
+    setLoading(false);
   };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
   const handleDescripcionChange = (text) => {
@@ -166,6 +172,7 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const handleSaveProfile = async () => {
+    setLoading(true);
     try {
       const userToken = await AsyncStorage.getItem('token');
       const userId = await AsyncStorage.getItem('_id');
@@ -188,6 +195,7 @@ const ProfileScreen = ({ navigation }) => {
       console.error('Error al actualizar el perfil:', error);
       Alert.alert('Error', 'Hubo un problema al actualizar tu perfil. Inténtalo de nuevo más tarde.');
     }
+    setLoading(false);
   };
 
   
@@ -244,6 +252,7 @@ const forceUpdate = () => {
 };
 
 const updateProfileImage = async (imageUri) => {
+  setLoading(true);
   try {
     const userToken = await AsyncStorage.getItem('token');
     const userId = await AsyncStorage.getItem('_id');
@@ -282,6 +291,7 @@ const updateProfileImage = async (imageUri) => {
   } catch (error) {
     console.error('Error al actualizar la foto de perfil:', error);
   }
+  setLoading(false);
 };
 
 const handleImagePress = (url, post) => {
@@ -323,6 +333,7 @@ const handleEdit = () => {
 };
 
 const handleDelete = async (postId) => {
+  setLoading(true);
   try {
     const userToken = await AsyncStorage.getItem('token');
 
@@ -345,10 +356,12 @@ const handleDelete = async (postId) => {
     console.error('Error al eliminar la publicación:', error);
     Alert.alert('Error', 'Se produjo un error al intentar eliminar la publicación. Por favor, inténtalo de nuevo más tarde.');
   }
+  setLoading(false);
 };
 
 
 const fetchFavoritos = async (userId, userToken) => {
+  setLoading(true);
   try {
     const response = await axios.get(`https://ropdat.onrender.com/api/publicaciones/misFavoritos/${userId}`, {
       headers: {
@@ -369,10 +382,12 @@ const fetchFavoritos = async (userId, userToken) => {
   } catch (error) {
     console.error('Error al obtener los favoritos:', error);
   }
+  setLoading(false);
 };
 
 
 const handleRemoveFromFavorites = async (_id) => {
+  setLoading(true);
   try {
     const userToken = await AsyncStorage.getItem('token');
     if (!userToken) {
@@ -398,21 +413,21 @@ const handleRemoveFromFavorites = async (_id) => {
     console.error('Error al eliminar de favoritos:', error);
     Alert.alert('Error', 'Hubo un problema al eliminar esta imagen de favoritos.');
   }
+  setLoading(false);
 };
 
 const handleSectionChange = (section) => {
   setSection(section);
 };
 
-
-const [favoritosModalVisible, setFavoritosModalVisible] = useState(false);
-
-const [selectedFavorito, setSelectedFavorito] = useState(null);
-
-
 return (
   <View style={styles.container}>
     <ScrollView contentContainerStyle={styles.profileContainer}>
+      {loading && ( // Mostrar indicador de carga si loading es true
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5450b5" />
+        </View>
+      )}
       <View style={styles.header}>
         <TouchableOpacity style={styles.optionsButton} onPress={handleLogout}>
           <Icon name="sign-out" size={24} color="#5450b5" />
@@ -525,6 +540,7 @@ return (
       </View>
     </View>
 
+   
     <Modal
         animationType="slide"
         transparent={true}
@@ -575,13 +591,13 @@ return (
               </TouchableOpacity>
             </View>
           )}
+          {loading && ( // Mostrar indicador de carga si loading es true
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5450b5" />
+        </View>
+      )}
         </View>
       </Modal>
-
-
-
-
-
 
     <Modal
       animationType="slide"
@@ -618,6 +634,11 @@ return (
             </View>
           </View>
         )}
+        {loading && ( // Mostrar indicador de carga si loading es true
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5450b5" />
+        </View>
+      )}
         {favoritosModalVisible && (
           <View>
             <Image
@@ -634,6 +655,11 @@ return (
             </View>
           </View>
         )}
+        {loading && ( // Mostrar indicador de carga si loading es true
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5450b5" />
+        </View>
+      )}
       </View>
     </Modal>
   </View>
@@ -644,6 +670,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)', // Color de fondo semi-transparente
+    zIndex: 9999, 
   },
   textContainer: {
     flex: 1,
