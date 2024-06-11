@@ -12,6 +12,7 @@ import EditarPublicacion from '../screens/EditarPublicacion'
 import styles from '../styles/styles';
 import Inicio from '../components/Inicio'
 import Buscar from '../components/Buscar'
+import ChangePassword  from '../screens/ChangePassword'
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -64,6 +65,22 @@ const Navigation = () => {
               onPress={() => {
                 if (route.name !== 'Login') {
                   navigation.navigate('Login');
+                }
+              }}
+            >
+            </Text>
+          ),
+        })}
+      />
+      <Tab.Screen name="ChangePassword" 
+        component={ChangePassword}
+        options={({ navigation, route }) => ({
+          tabBarButton: () => (
+            <Text
+              style={styles.tabBarButton}
+              onPress={() => {
+                if (route.name !== 'ChangePassword') {
+                  navigation.navigate('ChangePassword');
                 }
               }}
             >

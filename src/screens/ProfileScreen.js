@@ -27,6 +27,9 @@ const ProfileScreen = ({ navigation }) => {
   const [favoritosModalVisible, setFavoritosModalVisible] = useState(false);
   const [selectedFavorito, setSelectedFavorito] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   
   useFocusEffect(
     React.useCallback(() => {
@@ -46,6 +49,9 @@ const ProfileScreen = ({ navigation }) => {
        setEditandoDescripcion(false);
        setFavoritePosts([]);
        setDescripcion('');
+       setCurrentPassword('');
+       setNewPassword('');
+       setConfirmNewPassword('');
        setLoading(false);
  
        // Cargar la información del usuario al enfocar la pantalla
@@ -420,6 +426,62 @@ const handleSectionChange = (section) => {
   setSection(section);
 };
 
+const handleChangePassword = async () => {
+  const passwordRegex = /^(?=.*[A-Z]).{10,}$/;
+  
+  if (newPassword !== confirmNewPassword) {
+    Alert.alert("Error", "Las nuevas contraseñas no coinciden");
+    return;
+  }
+
+  if (!passwordRegex.test(newPassword)) {
+    Alert.alert("Error", "La nueva contraseña debe tener al menos 10 caracteres y contener al menos una letra mayúscula");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const userToken = await AsyncStorage.getItem('token');
+    if (!userToken) {
+      console.error('Token de usuario no encontrado en AsyncStorage');
+      setLoading(false);
+      return;
+    }
+
+    const response = await axios.put(
+      'https://ropdat.onrender.com/api/usuario/actualizarPassword',
+      {
+        passwordactual: currentPassword,
+        password: newPassword
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      Alert.alert('Éxito',  'Contraseña actualizada correctamente.');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    }
+  } catch (error) {
+    console.error('Error al actualizar la contraseña:', error);
+    if (error.response && error.response.data && error.response.data.msg) {
+      Alert.alert('Error', error.response.data.msg);
+    } else {
+      Alert.alert('Error', 'Hubo un problema al actualizar la contraseña.');
+    }
+  }
+
+  setLoading(false);
+};
+
+
+
 return (
   <View style={styles.container}>
     <ScrollView contentContainerStyle={styles.profileContainer}>
@@ -542,62 +604,98 @@ return (
 
    
     <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible || editProfileModalVisible}
-        onRequestClose={() => {
-          setModalVisible(false);
-          setEditProfileModalVisible(false);
-        }}
-      >
-        <View style={styles.modalContainer}>
-          <TouchableOpacity onPress={() => {
+      animationType="slide"
+      transparent={true}
+      visible={modalVisible || editProfileModalVisible}
+      onRequestClose={() => {
+        setModalVisible(false);
+        setEditProfileModalVisible(false);
+        
+      }}
+    >
+      <View style={styles.modalContainer}>
+        <TouchableOpacity
+          onPress={() => {
             setModalVisible(false);
             setEditProfileModalVisible(false);
-          }}>
-            <Text style={styles.closeButton}>Cerrar</Text>
-          </TouchableOpacity>
-          {editProfileModalVisible && (
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmNewPassword('');
+          }}
+        >
+          <Text style={styles.closeButton} >Cerrar</Text>
+        </TouchableOpacity>
+        {editProfileModalVisible && (
+          <View style={styles.editProfileContainer}>
+            <Text style={styles.editProfileTitle}>Editar Perfil</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nombre"
+              value={nombre}
+              onChangeText={(text) => setNombre(text.slice(0, 15))}
+              maxLength={15}
+              multiline={false}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Apellido"
+              value={apellido}
+              onChangeText={(text) => setApellido(text.slice(0, 15))}
+              maxLength={15}
+              multiline={false}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Descripción"
+              value={descripcion}
+              onChangeText={handleDescripcionChange}
+              multiline
+              maxLength={70}
+              numberOfLines={4}
+            />
+            <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>
+              <Text style={styles.saveButtonText}>Guardar</Text>
+            </TouchableOpacity>
+
+            {/* Sección para actualizar la contraseña */}
             <View style={styles.editProfileContainer}>
-              <Text style={styles.editProfileTitle}>Editar Perfil</Text>
+              <Text style={styles.editProfileTitle}>Actualizar Contraseña</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Nombre"
-                value={nombre}
-                onChangeText={(text) => setNombre(text.slice(0, 15))}
-                maxLength={15} // Máximo de 15 caracteres
-                multiline={false} // No permite saltos de línea
+                placeholder="Contraseña Actual"
+                secureTextEntry={true}
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
               />
               <TextInput
                 style={styles.input}
-                placeholder="Apellido"
-                value={apellido}
-                onChangeText={(text) => setApellido(text.slice(0, 15))}
-                maxLength={15} // Máximo de 15 caracteres
-                multiline={false} // No permite saltos de línea
+                placeholder="Nueva Contraseña"
+                secureTextEntry={true}
+                value={newPassword}
+                onChangeText={setNewPassword}
               />
               <TextInput
                 style={styles.input}
-                placeholder="Descripción"
-                value={descripcion}
-                onChangeText={handleDescripcionChange}
-                //onChangeText={setDescripcion}
-                multiline
-                maxLength={70}
-                numberOfLines={4}     
+                placeholder="Confirmar Nueva Contraseña"
+                secureTextEntry={true}
+                value={confirmNewPassword}
+                onChangeText={setConfirmNewPassword}
               />
-              <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>
-                <Text style={styles.saveButtonText}>Guardar</Text>
+              <TouchableOpacity style={styles.saveButton} onPress={handleChangePassword}>
+                <Text style={styles.saveButtonText}>Actualizar Contraseña</Text>
               </TouchableOpacity>
             </View>
-          )}
-          {loading && ( // Mostrar indicador de carga si loading es true
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#5450b5" />
-        </View>
-      )}
-        </View>
-      </Modal>
+          </View>
+        )}
+        {loading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#5450b5" />
+          </View>
+        )}
+      </View>
+    </Modal>
+
+
 
     <Modal
       animationType="slide"

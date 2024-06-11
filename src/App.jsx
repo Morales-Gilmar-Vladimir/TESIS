@@ -10,7 +10,9 @@ import PublishScreen from './screens/PublishScreen';
 import EditarPublicacion from './screens/EditarPublicacion'
 import Inicio from './components/Inicio'
 import Buscar from './components/Buscar'
-import Resultados from './components/Resultados'
+
+import ChangePassword  from '../screens/ChangePassword'
+
 
 const Stack = createStackNavigator();
 
@@ -79,6 +81,11 @@ const App = () => {
           name="Buscar"
           component={Buscar}
           options={{ title: 'Buscar' }}
+        />
+        <Stack.Screen
+          name="ChangePassword "
+          component={ChangePassword }
+          options={{ title: 'ChangePassword' }}
         />
       </Stack.Navigator>
 

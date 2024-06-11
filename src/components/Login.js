@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView , ActivityIndicator} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView , ActivityIndicator,  Modal                             } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import styles from '../styles/styles';
@@ -9,7 +9,11 @@ const Login = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
+  const [recoveryModalVisible, setRecoveryModalVisible] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState('');
+  const [recoveryCode, setRecoveryCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
   useEffect(() => {
     checkAuthToken();
@@ -19,6 +23,7 @@ const Login = ({ navigation }) => {
       setPassword('');
       setError('');
       setLoading(false);
+      setRecoveryEmail('');
     });
 
 
@@ -135,6 +140,35 @@ const Login = ({ navigation }) => {
     navigation.navigate('Registro');
   };
 
+
+  const handleRecoveryPress = () => {
+    setRecoveryModalVisible(true);
+  };
+  const handleSendRecoveryEmail = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post('https://ropdat.onrender.com/api/recuperar', { email: recoveryEmail });
+      Alert.alert('Éxito', response.data.msg || 'Correo de recuperación enviado.');
+      setRecoveryModalVisible(false);
+      setRecoveryEmail('');
+      navigation.navigate('ChangePassword', { token: response.data.token });
+    } catch (error) {
+      console.error('Error al enviar correo de recuperación:', error);
+      if (error.response && error.response.data && error.response.data.msg) {
+        if (error.response.data.msg === 'Correo electrónico no encontrado') {
+          Alert.alert('Error', 'El correo electrónico no se encuentra registrado.');
+        } else {
+          Alert.alert('Error', error.response.data.msg);
+        }
+      } else {
+        Alert.alert('Error', 'Hubo un problema al enviar el correo de recuperación.');
+      }
+    }
+    setLoading(false);
+  };
+  
+
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
        {loading && ( // Mostrar indicador de carga si loading es true
@@ -170,6 +204,54 @@ const Login = ({ navigation }) => {
           <Text style={styles.registroLink}>¡Regístrate aquí!</Text>
         </TouchableOpacity>
       </View>
+
+      <View style={styles.registroContainer}>
+        <Text style={styles.registroText}>¿Olvidaste tu contraseña?</Text>
+        <TouchableOpacity onPress={handleRecoveryPress}>
+          <Text style={styles.registroLink}>Recuperar contraseña</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={recoveryModalVisible}
+        onRequestClose={() => {
+          setRecoveryModalVisible(false);
+          setRecoveryEmail('');
+        }}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Recuperar Contraseña</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Correo electrónico"
+              value={recoveryEmail}
+              onChangeText={setRecoveryEmail}
+            />
+            <TouchableOpacity style={styles.button} onPress={handleSendRecoveryEmail}>
+              <Text style={styles.buttonText}>Enviar</Text>
+            </TouchableOpacity>
+            <View style={{ height: 10 }} />
+            <TouchableOpacity 
+              style={styles.button} 
+              onPress={() => {
+                setRecoveryModalVisible(false); // Ocultar el modal
+                setRecoveryEmail(''); // Vaciar el campo de correo electrónico
+              }} 
+            >
+              <Text style={styles.buttonText}>Cancelar</Text>
+            </TouchableOpacity>
+            {loading && ( // Mostrar indicador de carga si loading es true
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#5450b5" />
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+
     </ScrollView>
   );
 };
