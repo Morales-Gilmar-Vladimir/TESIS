@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BackHandler, View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, Modal, Alert, TextInput } from 'react-native';
+import { BackHandler, View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, Modal, Alert, TextInput, ActivityIndicator} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -31,9 +31,8 @@ const HomeScreen = ({ navigation }) => {
 
 // Función para cargar publicaciones, "Me gusta" y favoritos almacenados localmente
   const fetchData = async () => {
+    setLoading(true);
     try {
-      setLoading(true); // Iniciar estado de carga
-
       const token = await AsyncStorage.getItem('token');
       const response = await axios.get('https://ropdat.onrender.com/api/publicaciones', {
         headers: {
@@ -70,10 +69,14 @@ const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     fetchData();
+    setModalVisible(false);
+    setLoading(false);
   }, []);
 
   const fetchPublicaciones = async () => {
+    setLoading(true);
     try {
+      
       const token = await AsyncStorage.getItem('token');
       const response = await axios.get('https://ropdat.onrender.com/api/publicaciones', {
         headers: {
@@ -84,6 +87,7 @@ const HomeScreen = ({ navigation }) => {
     } catch (error) {
       console.error('Error al obtener las publicaciones:', error);
     }
+    setLoading(false);
   };
 
   const handleImagePress = (publicacion) => {
@@ -94,6 +98,7 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const handleLike = async (postId) => {
+    setLoading(true);
   try {
     const userToken = await AsyncStorage.getItem('token');
     
@@ -128,13 +133,14 @@ const HomeScreen = ({ navigation }) => {
     console.error('Error al dar me gusta:', error);
     Alert.alert('Error', 'Hubo un problema al dar me gusta a esta imagen.');
   }
+  setLoading(false);
 };
 
   
   
 
 const handleRemoveLike = async (postId) => {
-  
+  setLoading(true);
     try {
       const userToken = await AsyncStorage.getItem('token');
       const response = await axios.put(`https://ropdat.onrender.com/api/publicacion/likeEliminar/${postId}`, null, {
@@ -165,9 +171,11 @@ const handleRemoveLike = async (postId) => {
       console.error('Error al quitar me gusta:', error);
       Alert.alert('Error', 'Hubo un problema al quitar me gusta a esta imagen.');
     }
+    setLoading(false);
 };
 
   const handleDislike = async (postId) => {
+    setLoading(true);
     try {
       const userToken = await AsyncStorage.getItem('token');
       const response = await axios.put(`https://ropdat.onrender.com/api/publicacion/dilike/${postId}`, null, {
@@ -232,9 +240,11 @@ const handleRemoveLike = async (postId) => {
       console.error('Error al quitar dislike:', error);
       Alert.alert('Error', 'Hubo un problema al quitar dislike a esta imagen.');
     }
+    setLoading(false);
   };
 
   const handleAddToFavorites = async (postId) => {
+    setLoading(true);
     try {
       const userToken = await AsyncStorage.getItem('token');
       if (!userToken) {
@@ -284,6 +294,7 @@ const handleRemoveLike = async (postId) => {
       console.error('Error al agregar a favoritos:', error);
       Alert.alert('Aviso', 'Revisa tu lista de favoritos, esta imagen ya puede estar guardada.');
     }
+    setLoading(false);
   };
   
   
@@ -297,7 +308,7 @@ const handleRemoveLike = async (postId) => {
       Alert.alert('Error', 'Debes completar todos los campos.');
       return;
     }
-
+    setLoading(true);
     try {
       const token = await AsyncStorage.getItem('token');
       const response = await axios.post(
@@ -326,6 +337,7 @@ const handleRemoveLike = async (postId) => {
       console.error('Error al enviar el reporte:', error);
       Alert.alert('Error', 'Hubo un problema al enviar tu reporte.');
     }
+    setLoading(false);
   };
 
   const handleReporteClose = () => {
@@ -335,10 +347,12 @@ const handleRemoveLike = async (postId) => {
   };
 
 useEffect(() => {
+  fetchData();
     fetchPublicaciones();
   }, []);
 
   useEffect(() => {
+    fetchData();
     const handleBackPress = () => {
       if (navigation.isFocused()) {
         if (backPressCount < 1) {
@@ -367,6 +381,8 @@ useEffect(() => {
   useFocusEffect(
     React.useCallback(() => {
       setSearching();
+      setLoading(false);
+      fetchData();
       const handleBackPress = () => {
         if (backPressCount === 0) {
           setBackPressCount(1);
@@ -405,12 +421,18 @@ useEffect(() => {
     setSearching(false);
   };
 
-
+  const handlePostPress = (postId, userId) => {
+    navigation.navigate('Perfil_Usuario', { postId, userId });
+  };
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        
+      {loading && ( // Mostrar indicador de carga si loading es true
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5450b5" />
+        </View>
+      )}
         <View style={styles.gridContainer}>
           {publicaciones.map((publicacion, index) => (
             <TouchableOpacity key={index} style={styles.gridItem} onPress={() => handleImagePress(publicacion)}>
@@ -421,7 +443,11 @@ useEffect(() => {
               <Text style={styles.likesText}>{publicacion.likes} ❤️</Text>
             </TouchableOpacity>
           ))}
+        </View>{loading && ( // Mostrar indicador de carga si loading es true
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5450b5" />
         </View>
+      )}
         <View style={{ height: 70 }} />
       </ScrollView>  
       
@@ -431,6 +457,11 @@ useEffect(() => {
       <TouchableOpacity style={styles.searchButton} onPress={() => setSearching(true)}>
         <Icon name="search" size={20} color="#5450b5" />
       </TouchableOpacity>
+      {loading && ( // Mostrar indicador de carga si loading es true
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5450b5" />
+        </View>
+      )}
       {searching && (
         <View style={styles.filterContainer}>
           <Buscar buscarPublicaciones={setPublicaciones} onSearchComplete={cerrarBusqueda}  />
@@ -451,17 +482,50 @@ useEffect(() => {
             setModalVisible(false);
            // fetchData();
           }}>
-            <Text style={styles.closeButton}>Cerrar</Text>
+             <Icon name="times" size={40} color="#5450b5" />
+             <View style={{ height: 30 }} />
           </TouchableOpacity>
 
           {selectedPost && (
             <View style={styles.detailsContainer}>
-              <Text style={styles.userName}>Usuario: {selectedPost.nombre}</Text>
-              <Text style={styles.imageDescription}>{selectedPost.descripcion}</Text>
+            <TouchableOpacity onPress={() => {handlePostPress(selectedPost._id, selectedPost.usuarioID)
+              setModalVisible(false);}
+            }>
+                  <Text style={styles.submitButton}>{selectedPost.nombre}</Text>
+            </TouchableOpacity>
+      
+              {/* <Text style={styles.userName}>{selectedPost.nombre}</Text> */}
+              
+              {/* <Text style={styles.imageDescription}>{selectedPost.descripcion}</Text> */}
+            </View>
+
+          )}{loading && ( // Mostrar indicador de carga si loading es true
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#5450b5" />
             </View>
           )}
+
           <Image source={{ uri: imagenAmpliada }} style={styles.ampliada} />
+          
           <View style={{ height: 30 }} />
+          <Text style={styles.submitButton}>Detalles Publicacion</Text>
+        
+          {selectedPost && (
+            
+          <View style={styles.postInfoContainer}>
+              {/* <Text style={styles.imageName}>{selectedFavorito._id}</Text> */}
+              <Text style={styles.Description}>Descripcion:</Text>
+              <Text style={styles.imageDescription}>{selectedPost.descripcion}</Text>
+              <Text style={styles.Description}>Temporada:</Text>
+              <Text style={styles.imageDescription}>{selectedPost.estilo.temporada}</Text>
+              <Text style={styles.Description}>Epoca:</Text>
+              <Text style={styles.imageDescription}>{selectedPost.estilo.epoca}</Text>
+              <Text style={styles.Description}>Estilo:</Text>
+              <Text style={styles.imageDescription}>{selectedPost.estilo.estiloG}</Text>
+            </View>
+           )}
+           <View style={{ height: 10 }} />
+
           <View style={styles.buttonsContainer}>
             <TouchableOpacity
               style={styles.button}
@@ -579,6 +643,11 @@ useEffect(() => {
                     <Text style={styles.closeButton}>Cancelar</Text>
                   </TouchableOpacity>
               </View>
+              {loading && ( // Mostrar indicador de carga si loading es true
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5450b5" />
+        </View>
+      )}
       </Modal>
     </View>
   );
@@ -590,6 +659,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     position: 'relative',
     marginTop: -0, 
+    backgroundColor: '#fff',
+  },
+  postInfoContainer: {
+    backgroundColor: '#f0f1f1',
+    paddingHorizontal: 70,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  imageDescription: {
+    fontSize: 16,
+    alignItems: 'center', // Alinea el contenido en el centro horizontalmente
+    textAlign: 'center', // Alinea el texto horizontalmente en el centro
+    textAlignVertical: 'center', // Alinea el texto verticalmente en el centro
+   color: "black"
+  },  
+  Description: {
+    fontWeight: 'bold',
+    fontSize: 19,
+    alignItems: 'center', // Alinea el contenido en el centro horizontalmente
+    textAlign: 'center', // Alinea el texto horizontalmente en el centro
+    textAlignVertical: 'center', // Alinea el texto verticalmente en el centro
+    color: '#5450b5'
   },
   clearButton: {
     position: 'absolute',
@@ -718,12 +810,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginLeft: 10,
   },
-  imageDescription: {
-    fontSize: 14,
-    marginTop: 5,
-    marginLeft: 10,
-    color: 'white'
-  },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -791,6 +877,17 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 },
     zIndex: 10,
+  },  
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)', // Color de fondo semi-transparente
+    zIndex: 9999, 
   },
   menuItem: {
     padding: 10,

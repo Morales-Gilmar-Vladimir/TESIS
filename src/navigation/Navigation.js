@@ -13,6 +13,7 @@ import styles from '../styles/styles';
 import Inicio from '../components/Inicio'
 import Buscar from '../components/Buscar'
 import ChangePassword  from '../screens/ChangePassword'
+import Perfil_Usuario from '../screens/Perfil_Usuario'
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -179,6 +180,21 @@ const Navigation = () => {
             ),
           })}
         />
+      )}
+      {isLoggedIn && (
+        <Tab.Screen
+          name="Perfil_Usuario"
+          component={Perfil_Usuario}
+          options={({ navigation }) => ({
+            tabBarButton: () => (
+              <Text
+                style={styles.tabBarButton}
+                onPress={() => navigation.navigate('Perfil_Usuario')}
+              >
+              </Text>
+            ),
+          })}
+        />   
       )}
     </Tab.Navigator>
   );

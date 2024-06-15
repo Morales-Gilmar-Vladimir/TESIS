@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, TextInput, Button, Alert, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
+import { View, ScrollView, TextInput, Button, Alert, StyleSheet, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { Picker } from '@react-native-picker/picker'
@@ -16,6 +16,7 @@ const Buscar = ({ buscarPublicaciones, onSearchComplete  }) => {
   const [showEstiloGSelectOption, setShowEstiloGSelectOption] = useState(true);
   const [publicacionesFiltradas, setPublicacionesFiltradas] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleTemporadaChange = (value) => {
     console.log('Temporada seleccionada:', value);
@@ -48,6 +49,7 @@ const Buscar = ({ buscarPublicaciones, onSearchComplete  }) => {
   };
 
   const handleBuscar = async () => {
+    setLoading(true);
     try {
         const userToken = await AsyncStorage.getItem('token');
         
@@ -109,10 +111,7 @@ const Buscar = ({ buscarPublicaciones, onSearchComplete  }) => {
             buscarPublicaciones(busqueda);
             
 
-            Alert.alert(
-                'Éxito',
-                'Se encontraron publicaciones con los criterios de búsqueda.'
-            );
+            
         } else {
           setPublicacionesFiltradas([]);
           
@@ -132,6 +131,7 @@ const Buscar = ({ buscarPublicaciones, onSearchComplete  }) => {
             'Se produjo un error al realizar la búsqueda. Por favor, inténtalo de nuevo más tarde.'
         );
     }
+    setLoading(false);
 };
 
 
@@ -140,6 +140,11 @@ const Buscar = ({ buscarPublicaciones, onSearchComplete  }) => {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      {loading && ( // Mostrar indicador de carga si loading es true
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5450b5" />
+        </View>
+      )}
       <View style={{ height: 2 }} />
         <Text style={styles.filterTitle}>Temporada</Text>
         <View style={{ height: 5 }} />
@@ -157,6 +162,11 @@ const Buscar = ({ buscarPublicaciones, onSearchComplete  }) => {
             <Picker.Item label="Invierno" value="Invierno" />
             <Picker.Item label="Cualquier" value="Cualquier" />
           </Picker>
+          {loading && ( // Mostrar indicador de carga si loading es true
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5450b5" />
+        </View>
+      )}
         </View>
         
         <Text style={styles.filterTitle}>Época</Text>
@@ -176,6 +186,11 @@ const Buscar = ({ buscarPublicaciones, onSearchComplete  }) => {
             <Picker.Item label="2020's: 2020 - presente" value="2020's" />
             <Picker.Item label="Cualquier" value="Cualquier" />
           </Picker>
+          {loading && ( // Mostrar indicador de carga si loading es true
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5450b5" />
+        </View>
+      )}
         </View>
 
 
@@ -193,6 +208,11 @@ const Buscar = ({ buscarPublicaciones, onSearchComplete  }) => {
             <Picker.Item label="Femenino" value="Femenino" />
             <Picker.Item label="Cualquier" value="Cualquier " />
           </Picker>
+          {loading && ( // Mostrar indicador de carga si loading es true
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5450b5" />
+        </View>
+      )}
         </View>
         
 
@@ -217,14 +237,25 @@ const Buscar = ({ buscarPublicaciones, onSearchComplete  }) => {
             <Picker.Item label="Urbano" value="Urbano" />
             <Picker.Item label="Otros" value="Otros" />
           </Picker>
-          
+          {loading && ( // Mostrar indicador de carga si loading es true
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5450b5" />
         </View>
+      )}
+          
+        </View>{loading && ( // Mostrar indicador de carga si loading es true
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5450b5" />
+        </View>
+      )}
         <View style={{ height: 30}} />
         <TouchableOpacity style={styles.XButton} onPress={handleBuscar}>
           <Text style={styles.submitButton}>Buscar Publicaciones</Text>
         </TouchableOpacity>
       </ScrollView>
+      
     </View>
+    
   );
 };
 
@@ -242,6 +273,17 @@ const styles = StyleSheet.create({
     textAlign: 'center', // Alinea el texto en el centro
     
 
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)', // Color de fondo semi-transparente
+    zIndex: 9999, 
   },
     submitButton: {
       color: '#5450b5', // Color del texto

@@ -253,6 +253,7 @@ const confirmProfileImage = async () => {
 };
 
 const forceUpdate = () => {
+  navigation.navigate('Home');
   setSelectedImageUri(null); 
   fetchUserData(); 
 };
@@ -328,7 +329,7 @@ const handleLogout = async () => {
 
 const navigateToHome = () => {
   navigation.navigate('Home');
-  forceUpdate(); // Llamamos a la función para actualizar la pantalla de inicio
+  forceUpdate(); 
 };
 
 const handleEdit = () => {
@@ -623,7 +624,8 @@ return (
             setConfirmNewPassword('');
           }}
         >
-          <Text style={styles.closeButton} >Cerrar</Text>
+          <Icon name="times" size={40} color="#5450b5" />
+          <View style={{ height: 30 }} />
         </TouchableOpacity>
         {editProfileModalVisible && (
           <View style={styles.editProfileContainer}>
@@ -711,7 +713,8 @@ return (
           setModalVisible(false);
           setFavoritosModalVisible(false);
         }}>
-          <Text style={styles.closeButton}>Cerrar</Text>
+          <Icon name="times" size={40} color="#5450b5" />
+          
         </TouchableOpacity>
         {selectedPost && !favoritosModalVisible && (
           <View>
@@ -747,6 +750,13 @@ return (
               {/* <Text style={styles.imageName}>{selectedFavorito._id}</Text> */}
               <Text style={styles.Description}>Descripcion:</Text>
               <Text style={styles.imageDescription}>{selectedFavorito.descripcion}</Text>
+              <Text style={styles.Description}>Temporada:</Text>
+              <Text style={styles.imageDescription}>{selectedFavorito.estilo.temporada}</Text>
+              <Text style={styles.Description}>Epoca:</Text>
+              <Text style={styles.imageDescription}>{selectedFavorito.estilo.epoca}</Text>
+              <Text style={styles.Description}>Estilo:</Text>
+              <Text style={styles.imageDescription}>{selectedFavorito.estilo.estiloG}</Text>
+
               <TouchableOpacity style={styles.button} onPress={() => handleRemoveFromFavorites(selectedFavorito._id)}>
                 <Text style={styles.buttonText}>Eliminar de Favoritos</Text>
               </TouchableOpacity>
@@ -906,7 +916,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', // Alinea el contenido en el centro horizontalmente
     textAlign: 'center', // Alinea el texto horizontalmente en el centro
     textAlignVertical: 'center', // Alinea el texto verticalmente en el centro
-   
+   color: '#5450b5'
   },
   confirmButton: {
     backgroundColor: '#d8e1fe',

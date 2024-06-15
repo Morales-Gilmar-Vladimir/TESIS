@@ -12,7 +12,7 @@ import Inicio from './components/Inicio'
 import Buscar from './components/Buscar'
 
 import ChangePassword  from '../screens/ChangePassword'
-
+import Perfil_Usuario from '../screens/Perfil_Usuario'
 
 const Stack = createStackNavigator();
 
@@ -86,6 +86,11 @@ const App = () => {
           name="ChangePassword "
           component={ChangePassword }
           options={{ title: 'ChangePassword' }}
+        />
+        <Stack.Screen 
+          name="Perfil Usuario" 
+          component={Perfil_Usuario} 
+          options={{ title: 'Perfil Usuario' }}
         />
       </Stack.Navigator>
 

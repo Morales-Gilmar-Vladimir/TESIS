@@ -39,6 +39,7 @@ const PublishScreen = ({ navigation }) => {
         setShowGeneroSelectOption(true);
         setShowEstiloGSelectOption(true);
         setLoading(false);
+        
       };
 
       cleanUpStates();
@@ -50,8 +51,10 @@ const PublishScreen = ({ navigation }) => {
   );
   
   useEffect(() => {
+    
       
 const handleBackPress = () => {
+  
       if (navigation.isFocused()) {
         navigation.navigate('Home');
         return true;
@@ -75,6 +78,7 @@ const handleBackPress = () => {
 
 
   const pickImageFromGallery = async () => {
+    setLoading(true);
     try {
       setLoadingImage(true);
 
@@ -98,28 +102,26 @@ const handleBackPress = () => {
       setLoadingImage(false);
       console.error('Error al seleccionar la imagen:', error);
     }
+    setLoading(false);
   };
 
   const publishPost = async () => {
+    // Validar que todos los campos estén llenos
+    if (!selectedImageUri || !descripcion || !temporada || !epoca || !genero || !estiloG) {
+      Alert.alert('Campos incompletos', 'Por favor llena todos los campos para publicar');
+      return;
+    }
+  
     setLoading(true);
     try {
       const userId = await AsyncStorage.getItem('_id');
       const userToken = await AsyncStorage.getItem('token');
   
-      if (!selectedImageUri) {
-        console.log('Error: Imagen no seleccionada');
-        Alert.alert('Error', 'Debes seleccionar una imagen');
-        setLoading(false); // Detener el indicador de carga
-        return;
-      }
-      
       const formData = new FormData();
       formData.append('descripcion', descripcion);
       formData.append('temporada', temporada);
       formData.append('epoca', epoca);
       formData.append('genero', genero);
-      formData.append('estilo', estilo);
-      formData.append('anio', anio);
       formData.append('estiloG', estiloG);
       formData.append('userId', userId);
       formData.append('image', {
@@ -135,30 +137,14 @@ const handleBackPress = () => {
         },
       };
   
-      console.log('Datos a enviar:', {
-        descripcion,
-        temporada,
-        epoca,
-        genero,
-        estilo,
-        anio,
-        estiloG,
-        image: {
-          uri: selectedImageUri,
-          type: 'image/jpeg',
-          name: `publicacion_${userId}.jpg`,
-        },
-      });
-  
       const response = await axios.post('https://ropdat.onrender.com/api/publicar', formData, config);
   
       if (response.status === 200) {
         if (response.data.msg === "Su cuenta esta restringida") {
-          // Muestra la alerta correspondiente si la cuenta está restringida       
           Alert.alert('Cuenta restringida', 'Tu cuenta está restringida y no puedes interactuar.');
-          return; // Detener la ejecución de la función si la cuenta está restringida
+          return;
         }
-
+  
         Alert.alert('Éxito', 'Publicación realizada correctamente');
         setSelectedImageUri(null);
         setDescripcion('');
@@ -177,6 +163,7 @@ const handleBackPress = () => {
     }
     setLoading(false); // Detener el indicador de carga
   };
+  
   
   
   const navigateToHome = () => {
