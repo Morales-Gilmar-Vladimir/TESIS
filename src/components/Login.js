@@ -41,6 +41,7 @@ const Login = ({ navigation }) => {
       console.error('Error al verificar el token de autenticación:', error);
     }
   };
+
   const handleLogin = async () => {
     try {
       const url = 'https://ropdat.onrender.com/api/login'; 
@@ -151,7 +152,7 @@ const Login = ({ navigation }) => {
       Alert.alert('Éxito', response.data.msg || 'Correo de recuperación enviado.');
       setRecoveryModalVisible(false);
       setRecoveryEmail('');
-      navigation.navigate('ChangePassword', { token: response.data.token });
+      navigation.navigate('Recuperar_Contraseña', { token: response.data.token });
     } catch (error) {
       console.error('Error al enviar correo de recuperación:', error);
       if (error.response && error.response.data && error.response.data.msg) {
@@ -167,8 +168,10 @@ const Login = ({ navigation }) => {
     setLoading(false);
   };
   
-
-
+  const handleChangePassword = () => {
+    navigation.navigate('Recuperar_Contraseña');
+  };
+  
   return (
     <ScrollView contentContainerStyle={styles.container}>
        {loading && ( // Mostrar indicador de carga si loading es true
@@ -209,6 +212,13 @@ const Login = ({ navigation }) => {
         <Text style={styles.registroText}>¿Olvidaste tu contraseña?</Text>
         <TouchableOpacity onPress={handleRecoveryPress}>
           <Text style={styles.registroLink}>Recuperar contraseña</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.registroContainer}>
+        <Text style={styles.registroText}>¿Ya tienes una clave de recuperación?</Text>
+        <TouchableOpacity onPress={handleChangePassword}>
+          <Text style={styles.registroLink}>Ingresar aquí</Text>
         </TouchableOpacity>
       </View>
 

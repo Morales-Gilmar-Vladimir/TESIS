@@ -22,7 +22,8 @@ const PublishScreen = ({ navigation }) => {
   const [showGeneroSelectOption, setShowGeneroSelectOption] = useState(true);
   const [showEstiloGSelectOption, setShowEstiloGSelectOption] = useState(true);
   const [loading, setLoading] = useState(false);
-  
+  const [cuentaBloqueada, setCuentaBloqueada] = useState(false); // Estado para verificar cuenta bloqueada
+
   useFocusEffect(
     React.useCallback(() => {
       const cleanUpStates = () => {
@@ -39,6 +40,7 @@ const PublishScreen = ({ navigation }) => {
         setShowGeneroSelectOption(true);
         setShowEstiloGSelectOption(true);
         setLoading(false);
+        setCuentaBloqueada(false);
         
       };
 
@@ -144,6 +146,16 @@ const handleBackPress = () => {
           Alert.alert('Cuenta restringida', 'Tu cuenta está restringida y no puedes interactuar.');
           return;
         }
+
+          // Verificar si la cuenta está bloqueada en base a la respuesta de las publicaciones
+          if (response.data.msg === "Usuario Bloqueado") {
+            // Muestra la alerta correspondiente si la cuenta está restringida
+            Alert.alert('Cuenta Bloqueada', 'Tu cuenta está bloqueada y no podras acceder a ella.', [
+              { text: 'OK', onPress: handleLogout }
+            ]);
+            setCuentaBloqueada(true); // Establecer el estado de cuenta bloqueada a true
+            return; // Detener la ejecución de la función si la cuenta está restringida
+          }
   
         Alert.alert('Éxito', 'Publicación realizada correctamente');
         setSelectedImageUri(null);
@@ -164,7 +176,20 @@ const handleBackPress = () => {
     setLoading(false); // Detener el indicador de carga
   };
   
-  
+  const [userData, setUserData] = useState(null);
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('_id');
+      setUserData(null);
+      setPublicaciones([]);
+      //setSelectedImageUri(null);
+      navigation.navigate('Login');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
   
   const navigateToHome = () => {
     navigation.navigate('Home');
@@ -251,7 +276,7 @@ const handleEstiloGChange = (value) => {
           <Picker.Item label="Verano" value="Verano" />
           <Picker.Item label="Otoño" value="Otoño" />
           <Picker.Item label="Invierno" value="Invierno" />
-          <Picker.Item label="Cualquier" value="Cualquier" />
+          <Picker.Item label="Otros" value="Cualquier" />
         </Picker>
       </View>
 
@@ -269,7 +294,7 @@ const handleEstiloGChange = (value) => {
           <Picker.Item label="2000's: 2000 - 2009" value="2000's" />
           <Picker.Item label="2010's: 2010 - 2019" value="2010's" />
           <Picker.Item label="2020's: 2020 - presente" value="2020's" />
-          <Picker.Item label="Cualquier" value="Cualquier" />
+          <Picker.Item label="Otros" value="Cualquier" />
         </Picker>
       </View>
       <View style={{ height: 10 }} />
@@ -282,7 +307,7 @@ const handleEstiloGChange = (value) => {
           {showGeneroSelectOption && <Picker.Item label="Seleccione a que género va dirigido" value={null} />}
           <Picker.Item label="Masculino" value="Masculino" />
           <Picker.Item label="Femenino" value="Femenino" />
-          <Picker.Item label="Cualquier" value="Cualquier " />
+          <Picker.Item label="Prefiero no resonder" value="Cualquier " />
         </Picker>
       </View>
       <View style={{ height: 10 }} />
@@ -320,6 +345,9 @@ const handleEstiloGChange = (value) => {
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publicar')}>
             <Icon name="plus-square" size={24} color="#5450b5" />
           </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Notificaciones')}>
+            <Icon name="bell" size={24} color="#5450b5" />
+        </TouchableOpacity> 
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Perfil')}>
             <Icon name="user" size={24} color="#5450b5" />
           </TouchableOpacity>

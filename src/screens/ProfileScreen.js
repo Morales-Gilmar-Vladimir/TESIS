@@ -110,8 +110,21 @@ const ProfileScreen = ({ navigation }) => {
         console.error('No se recibieron datos de usuario válidos desde la API');
         return;
       }
-  
-      const userData = responseUserData.data.UsuarioBDD;
+
+      
+      
+      console.log('Datos del usuario y publicaciones cargados correctamente');
+      if (responseUserData.status === 200) {
+        // Verificar si la cuenta está bloqueada en base a la respuesta de las publicaciones
+        if (responseUserData.data.msg === "Usuario Bloqueado") {
+          // Muestra la alerta correspondiente si la cuenta está restringida
+          Alert.alert('Cuenta Bloqueada', 'Tu cuenta está bloqueada y no podras acceder a ella.', [
+            { text: 'OK', onPress: handleLogout }
+          ]);
+          setCuentaBloqueada(true); // Establecer el estado de cuenta bloqueada a true
+          return; // Detener la ejecución de la función si la cuenta está restringida
+        }
+        const userData = responseUserData.data.UsuarioBDD;
       setUserData(userData);
       setDescripcionEditable(userData.descripcion); // Establecer la descripción editable inicialmente
       setNombre(userData.nombre);
@@ -121,7 +134,8 @@ const ProfileScreen = ({ navigation }) => {
       setPublicaciones(userPosts);
       fetchFavoritos(userId, userToken);
       
-      console.log('Datos del usuario y publicaciones cargados correctamente');
+      }
+
     } catch (error) {
       console.error('Error al obtener la información del perfil:', error);
     }
@@ -562,6 +576,7 @@ return (
                 source={{ uri: publicacion.imagen.secure_url }}
                 style={styles.image}
               />
+               <Text style={styles.likesText}>{publicacion.likes} ❤️</Text>
             </TouchableOpacity>
           ))
         )}
@@ -596,6 +611,9 @@ return (
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publicar')}>
           <Icon name="plus-square" size={24} color="#5450b5" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Notificaciones')}>
+            <Icon name="bell" size={24} color="#5450b5" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Perfil')}>
           <Icon name="user" size={24} color="#5450b5" />
@@ -789,6 +807,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.5)', // Color de fondo semi-transparente
     zIndex: 9999, 
+  },
+  likesText: {
+    position: 'absolute',
+    bottom: 10,
+    left: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    color: 'white',
+    paddingVertical: 2,
+    paddingHorizontal: 5,
+    borderRadius: 5,
   },
   textContainer: {
     flex: 1,

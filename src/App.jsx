@@ -11,8 +11,9 @@ import EditarPublicacion from './screens/EditarPublicacion'
 import Inicio from './components/Inicio'
 import Buscar from './components/Buscar'
 
-import ChangePassword  from '../screens/ChangePassword'
+import Recuperar_Contraseña  from '../screens/Recuperar_Contraseña'
 import Perfil_Usuario from '../screens/Perfil_Usuario'
+import Notificaciones from '../screens/Notificaciones'
 
 const Stack = createStackNavigator();
 
@@ -83,14 +84,19 @@ const App = () => {
           options={{ title: 'Buscar' }}
         />
         <Stack.Screen
-          name="ChangePassword "
-          component={ChangePassword }
-          options={{ title: 'ChangePassword' }}
+          name="Recuperar_Contraseña "
+          component={Recuperar_Contraseña }
+          options={{ title: 'Recuperar_Contraseña' }}
         />
         <Stack.Screen 
           name="Perfil Usuario" 
           component={Perfil_Usuario} 
           options={{ title: 'Perfil Usuario' }}
+        />
+        <Stack.Screen 
+          name="Notificaciones" 
+          component={Notificaciones} 
+          options={{ title: 'Notificaciones' }}
         />
       </Stack.Navigator>
 

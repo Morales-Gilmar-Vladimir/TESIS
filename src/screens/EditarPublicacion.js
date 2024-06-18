@@ -172,7 +172,7 @@ const EditarPublicacion = ({ route, navigation }) => {
           <Picker.Item label="Verano" value="Verano" />
           <Picker.Item label="Otoño" value="Otoño" />
           <Picker.Item label="Invierno" value="Invierno" />
-          <Picker.Item label="Cualquier" value="Cualquier" />
+          <Picker.Item label="Otros" value="Cualquier" />
         </Picker>
       </View>
       <View style={{ height: 10 }} />
@@ -189,7 +189,7 @@ const EditarPublicacion = ({ route, navigation }) => {
           <Picker.Item label="2000's: 2000 - 2009" value="2000's" />
           <Picker.Item label="2010's: 2010 - 2019" value="2010's" />
           <Picker.Item label="2020's: 2020 - presente" value="2020's" />
-          <Picker.Item label="Cualquier" value="Cualquier" />
+          <Picker.Item label="Otros" value="Cualquier" />
         </Picker>
       </View>
       <View style={{ height: 10 }} />
@@ -201,7 +201,7 @@ const EditarPublicacion = ({ route, navigation }) => {
         >
           <Picker.Item label="Masculino" value="Masculino" />
           <Picker.Item label="Femenino" value="Femenino" />
-          <Picker.Item label="Cualquier" value="Cualquier " />
+          <Picker.Item label="Prefiero no responder" value="Cualquier " />
         </Picker>
       </View>
       <View style={{ height: 10 }} />

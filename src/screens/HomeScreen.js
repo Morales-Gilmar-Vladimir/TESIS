@@ -25,7 +25,7 @@ const HomeScreen = ({ navigation }) => {
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cuentaRestringida, setCuentaRestringida] = useState(false); // Estado para verificar si la cuenta está restringida
-
+  const [cuentaBloqueada, setCuentaBloqueada] = useState(false); // Estado para verificar cuenta bloqueada
 
 
 
@@ -66,8 +66,8 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-
   useEffect(() => {
+    setCuentaBloqueada(false);
     fetchData();
     setModalVisible(false);
     setLoading(false);
@@ -83,12 +83,43 @@ const HomeScreen = ({ navigation }) => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setPublicaciones(response.data);
+
+      
+      if (response.status === 200) {
+        // Verificar si la cuenta está bloqueada en base a la respuesta de las publicaciones
+        if (response.data.msg === "Usuario Bloqueado") {
+          // Muestra la alerta correspondiente si la cuenta está restringida
+          Alert.alert('Cuenta Bloqueada', 'Tu cuenta está bloqueada y no podras acceder a ella.', [
+            { text: 'OK', onPress: handleLogout }
+          ]);
+          setCuentaBloqueada(true); // Establecer el estado de cuenta bloqueada a true
+          return; // Detener la ejecución de la función si la cuenta está restringida
+        }
+        // Si el usuario no está bloqueado, establecer las publicaciones en el estado
+        setPublicaciones(response.data);
+      }
+
     } catch (error) {
       console.error('Error al obtener las publicaciones:', error);
     }
     setLoading(false);
   };
+
+  const [userData, setUserData] = useState(null);
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('_id');
+      setUserData(null);
+      setPublicaciones([]);
+      //setSelectedImageUri(null);
+      navigation.navigate('Login');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
+
 
   const handleImagePress = (publicacion) => {
     setSelectedPost(publicacion);
@@ -590,12 +621,12 @@ useEffect(() => {
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
             <Icon name="home" size={24} color="#5450b5" />
           </TouchableOpacity>
-          {/*<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Buscar')}>
-            <Icon name="search" size={24} color="black" />
-            </TouchableOpacity>*/}
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publicar')}>
             <Icon name="plus-square" size={24} color="#5450b5" />
           </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Notificaciones')}>
+            <Icon name="bell" size={24} color="#5450b5" />
+            </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={navigateToProfile}>
             <Icon name="user" size={24} color="#5450b5" />
           </TouchableOpacity>

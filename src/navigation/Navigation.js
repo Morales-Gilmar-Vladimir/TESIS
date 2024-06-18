@@ -12,8 +12,9 @@ import EditarPublicacion from '../screens/EditarPublicacion'
 import styles from '../styles/styles';
 import Inicio from '../components/Inicio'
 import Buscar from '../components/Buscar'
-import ChangePassword  from '../screens/ChangePassword'
+import Recuperar_Contraseña  from '../screens/Recuperar_Contraseña'
 import Perfil_Usuario from '../screens/Perfil_Usuario'
+import Notificaciones from '../screens/Notificaciones'
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -73,15 +74,15 @@ const Navigation = () => {
           ),
         })}
       />
-      <Tab.Screen name="ChangePassword" 
-        component={ChangePassword}
+      <Tab.Screen name="Recuperar_Contraseña" 
+        component={Recuperar_Contraseña}
         options={({ navigation, route }) => ({
           tabBarButton: () => (
             <Text
               style={styles.tabBarButton}
               onPress={() => {
-                if (route.name !== 'ChangePassword') {
-                  navigation.navigate('ChangePassword');
+                if (route.name !== 'Recuperar_Contraseña') {
+                  navigation.navigate('Recuperar_Contraseña');
                 }
               }}
             >
@@ -190,6 +191,21 @@ const Navigation = () => {
               <Text
                 style={styles.tabBarButton}
                 onPress={() => navigation.navigate('Perfil_Usuario')}
+              >
+              </Text>
+            ),
+          })}
+        />   
+      )}
+      {isLoggedIn && (
+        <Tab.Screen
+          name="Notificaciones"
+          component={Notificaciones}
+          options={({ navigation }) => ({
+            tabBarButton: () => (
+              <Text
+                style={styles.tabBarButton}
+                onPress={() => navigation.navigate('Notificaciones')}
               >
               </Text>
             ),
