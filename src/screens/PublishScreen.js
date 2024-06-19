@@ -307,7 +307,7 @@ const handleEstiloGChange = (value) => {
           {showGeneroSelectOption && <Picker.Item label="Seleccione a que género va dirigido" value={null} />}
           <Picker.Item label="Masculino" value="Masculino" />
           <Picker.Item label="Femenino" value="Femenino" />
-          <Picker.Item label="Prefiero no resonder" value="Cualquier " />
+          <Picker.Item label="Prefiero no responder" value="Cualquier " />
         </Picker>
       </View>
       <View style={{ height: 10 }} />
