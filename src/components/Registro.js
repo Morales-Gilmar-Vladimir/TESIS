@@ -175,7 +175,7 @@ const Registro = ({ navigation }) => {
 
   const handleTermsPress = () => {
     // Aquí defines la URL de tus términos y condiciones
-    const termsUrl = 'https://drive.google.com/file/d/1_T_H0VBNnASnxYdumS-wCm0H1_IzfaFm/view?usp=sharing';
+    const termsUrl = 'https://drive.google.com/file/d/14i7BnOWBgvIRwrlF-W7eeIlP3a4-wnAq/view?usp=sharing';
     Linking.openURL(termsUrl);
   };
 

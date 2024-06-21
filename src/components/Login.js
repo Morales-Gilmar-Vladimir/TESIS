@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView , ActivityIndicator,  Modal                             } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView , ActivityIndicator,  Modal, BackHandler} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import styles from '../styles/styles';
@@ -26,9 +26,20 @@ const Login = ({ navigation }) => {
       setRecoveryEmail('');
     });
 
+    // Manejar el botón de retroceso en Android
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      backHandler.remove();
+    };
   }, [navigation]);
+
+  const handleBackPress = () => {
+    // Salir de la aplicación
+    BackHandler.exitApp();
+    return true;
+  };
 
   const checkAuthToken = async () => {
     try {

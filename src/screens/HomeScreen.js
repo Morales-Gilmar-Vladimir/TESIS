@@ -456,6 +456,8 @@ useEffect(() => {
     navigation.navigate('Perfil_Usuario', { postId, userId });
   };
 
+
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
@@ -488,11 +490,6 @@ useEffect(() => {
       <TouchableOpacity style={styles.searchButton} onPress={() => setSearching(true)}>
         <Icon name="search" size={20} color="#5450b5" />
       </TouchableOpacity>
-      {loading && ( // Mostrar indicador de carga si loading es true
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#5450b5" />
-        </View>
-      )}
       {searching && (
         <View style={styles.filterContainer}>
           <Buscar buscarPublicaciones={setPublicaciones} onSearchComplete={cerrarBusqueda}  />
@@ -501,7 +498,6 @@ useEffect(() => {
           </TouchableOpacity>
         </View>
       )} 
-
       <Modal
         animationType="slide"
         transparent={true}

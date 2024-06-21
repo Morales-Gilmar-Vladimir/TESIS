@@ -66,7 +66,7 @@ const App = () => {
         <Stack.Screen
           name="Publicar"
           component={PublishScreen}
-          options={{ title: 'Perfil Usuario' }}
+          options={{ title: 'Publicar' }}
         />
         <Stack.Screen
           name="Editar Publicacion"

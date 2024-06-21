@@ -58,7 +58,8 @@ const Navigation = () => {
           tabBarButton: () => null,
         })}
       />
-      <Tab.Screen name="Login" 
+      <Tab.Screen 
+       name="Login" 
         component={Login}
         options={({ navigation, route }) => ({
           tabBarButton: () => (
