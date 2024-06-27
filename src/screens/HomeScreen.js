@@ -30,41 +30,42 @@ const HomeScreen = ({ navigation }) => {
 
 
 // Función para cargar publicaciones, "Me gusta" y favoritos almacenados localmente
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await axios.get('https://ropdat.onrender.com/api/publicaciones', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setPublicaciones(response.data);
+const fetchData = async () => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await axios.get('https://ropdat.onrender.com/api/publicaciones', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const sortedPublicaciones = response.data.sort((a, b) => b.likes - a.likes); // Ordenar por número de likes
+    setPublicaciones(sortedPublicaciones);
 
-      // Obtener las publicaciones marcadas como favoritas del almacenamiento local
-      const favoritosString = await AsyncStorage.getItem('favoritos');
-      if (favoritosString) {
-        const favoritosArray = JSON.parse(favoritosString);
-        setFavoritePosts(favoritosArray);
-      }
-
-      const likedPostsString = await AsyncStorage.getItem('likedPosts');
-      if (likedPostsString) {
-        const likedPostsArray = JSON.parse(likedPostsString);
-        setLikedPosts(likedPostsArray);
-      }
-
-      const dislikedPostsString = await AsyncStorage.getItem('dislikedPosts');
-      if (dislikedPostsString) {
-        const dislikedPostsArray = JSON.parse(dislikedPostsString);
-        setDislikedPosts(dislikedPostsArray);
-      }
-    } catch (error) {
-      console.error('Error al obtener las publicaciones:', error);
-    } finally {
-      setLoading(false); // Terminar estado de carga
+    const favoritosString = await AsyncStorage.getItem('favoritos');
+    if (favoritosString) {
+      const favoritosArray = JSON.parse(favoritosString);
+      setFavoritePosts(favoritosArray);
     }
-  };
+
+    const likedPostsString = await AsyncStorage.getItem('likedPosts');
+    if (likedPostsString) {
+      const likedPostsArray = JSON.parse(likedPostsString);
+      setLikedPosts(likedPostsArray);
+    }
+
+    const dislikedPostsString = await AsyncStorage.getItem('dislikedPosts');
+    if (dislikedPostsString) {
+      const dislikedPostsArray = JSON.parse(dislikedPostsString);
+      setDislikedPosts(dislikedPostsArray);
+    }
+  } catch (error) {
+    console.error('Error al obtener las publicaciones:', error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     setCuentaBloqueada(false);
@@ -95,6 +96,7 @@ const HomeScreen = ({ navigation }) => {
           setCuentaBloqueada(true); // Establecer el estado de cuenta bloqueada a true
           return; // Detener la ejecución de la función si la cuenta está restringida
         }
+        const sortedPublicaciones = response.data.sort((a, b) => b.likes - a.likes); // Ordenar por número de likes
         // Si el usuario no está bloqueado, establecer las publicaciones en el estado
         setPublicaciones(response.data);
       }
