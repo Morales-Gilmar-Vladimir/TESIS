@@ -1,7 +1,9 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { Alert, Linking, ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator, BackHandler } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
-import React, { useState, useEffect } from 'react';
-import { Alert, Linking, ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator  } from 'react-native'; // Agrega Alert
 import styles from '../styles/styles';
+
 
 const Registro = ({ navigation }) => {
   const [nombre, setNombre] = useState('');
@@ -29,6 +31,18 @@ const Registro = ({ navigation }) => {
     return unsubscribe;
   }, [navigation]);
 
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('Login');
+        return true;
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation])
+  );
 
   const handleRegister = async () => {
     setLoading(true);
