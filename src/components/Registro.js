@@ -180,12 +180,14 @@ const Registro = ({ navigation }) => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    // <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.scrollViewContent}>
       {loading && ( // Mostrar indicador de carga si loading es true
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#5450b5" />
         </View>
       )}
+      <View style={{ height: 50 }} />
       <Text style={styles.title}>Registro</Text>
       <Text style={styles.label}>Nombre</Text>
       <TextInput
@@ -240,7 +242,7 @@ const Registro = ({ navigation }) => {
           <Text style={styles.termsLink} onPress={handleTermsPress}>Leer términos y condiciones{'\n'}</Text>
         </Text>
       </View>
-  
+      <View style={{ height: 10 }} />
       <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
         <Text style={styles.buttonText}>Registrarse</Text>
       </TouchableOpacity>
@@ -251,7 +253,10 @@ const Registro = ({ navigation }) => {
           <Text style={styles.loginButton}>Ingresar</Text>
         </TouchableOpacity>
       </View>
+      <View style={{ height: 60 }} />
     </ScrollView>
+    
+    
   );
 }  
 

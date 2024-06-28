@@ -74,12 +74,22 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  scrollViewContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+     backgroundColor: '#d8e1fe'
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
-    backgroundColor: '#d8e1fe'
+    backgroundColor: '#d8e1fe',
+    
   },
   title: {
     fontSize: 24,
