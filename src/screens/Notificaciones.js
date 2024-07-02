@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, BackHandler } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, BackHandler, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useFocusEffect } from '@react-navigation/native';
@@ -9,7 +9,6 @@ const Notificaciones = ({ navigation }) => {
   const [notificaciones, setNotificaciones] = useState([]);
   const [loading, setLoading] = useState(false);
   const [cuentaBloqueada, setCuentaBloqueada] = useState(false); // Estado para verificar cuenta bloqueada
-
 
   useFocusEffect(
     React.useCallback(() => {
@@ -93,12 +92,12 @@ const Notificaciones = ({ navigation }) => {
     } else if (item.tipo === 'Alerta') {
       return (
         <View style={styles.notificationItem}>
-        <Icon name="exclamation-triangle" size={24} color="#5450b5" style={styles.icon} />
-        <Text style={styles.notificationText}>
-          Aviso!! {item.mensaje}, se informará en su correo electrónico cuando la cuenta
-           deje de estar restringida.
-        </Text>
-      </View>
+          <Icon name="exclamation-triangle" size={24} color="#5450b5" style={styles.icon} />
+          <Text style={styles.notificationText}>
+            Aviso!! {item.mensaje}, se informará en su correo electrónico cuando la cuenta
+             deje de estar restringida.
+          </Text>
+        </View>
       );
     }
     return null;
@@ -106,38 +105,42 @@ const Notificaciones = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-          {loading && (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#5450b5" />
-            </View>
-          )}
-        <ScrollView contentContainerStyle={styles.scrollViewContent}>
-          <View style={styles.notificationList}>
-            {notificaciones.map((item, index) => (
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5450b5" />
+        </View>
+      )}
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.notificationList}>
+          {notificaciones.length === 0 ? (
+            <Text style={styles.noNotificationsText}>No hay notificaciones</Text>
+          ) : (
+            notificaciones.map((item, index) => (
               <View key={index}>
                 {renderItem({ item })}
               </View>
-            ))}
-          </View>
-       <View style={{ height: 60 }} />
-       </ScrollView>
-          <View style={styles.fixedButtonsContainer}>
-            <View style={styles.buttonsContainer}>
-              <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
-                <Icon name="home" size={24} color="#5450b5" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publicar')}>
-                <Icon name="plus-square" size={24} color="#5450b5" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Notificaciones')}>
-                <Icon name="bell" size={24} color="#5450b5" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Perfil')}>
-                <Icon name="user" size={24} color="#5450b5" />
-              </TouchableOpacity>
-            </View>
-          </View>
+            ))
+          )}
+        </View>
+        <View style={{ height: 60 }} />
+      </ScrollView>
+      <View style={styles.fixedButtonsContainer}>
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
+            <Icon name="home" size={24} color="#5450b5" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Publicar')}>
+            <Icon name="plus-square" size={24} color="#5450b5" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Notificaciones')}>
+            <Icon name="bell" size={24} color="#5450b5" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Perfil')}>
+            <Icon name="user" size={24} color="#5450b5" />
+          </TouchableOpacity>
+        </View>
       </View>
+    </View>
   );
 };
 
@@ -147,7 +150,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     position: 'relative',
     marginTop: -0, 
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#F3F2FF',
   },
   icon: {
     marginRight: 10, // Espacio entre el icono y el texto
@@ -166,7 +169,6 @@ const styles = StyleSheet.create({
   notificationList: {
     marginBottom: 20,
     width: '100%', // Ancho fijo al 100% del contenedor padre
-    
   },
   scrollViewContent: {
     flexGrow: 1,
@@ -200,6 +202,13 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     marginLeft: 5,
     marginRight: 5,
+  },
+  noNotificationsText: {
+    fontSize: 16,
+    color: '#5450b5',
+    textAlign: 'center',
+    marginTop: 20,
+    fontWeight: 'bold'
   },
   username: {
     fontWeight: 'bold',

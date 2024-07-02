@@ -688,7 +688,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     position: 'relative',
     marginTop: -0, 
-    backgroundColor: '#fff',
+    backgroundColor: '#F3F2FF',
   },
   postInfoContainer: {
     backgroundColor: '#f0f1f1',
@@ -781,6 +781,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20, // Ajuste de espaciado vertical
     borderBottomWidth: 1, // Añade borde inferior
     borderBottomColor: 'lightgray', // Color del borde inferior
+    backgroundColor: "#F3F2FF"
   },
   scrollViewContent: {
     flexGrow: 1,

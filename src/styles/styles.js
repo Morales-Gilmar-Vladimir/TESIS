@@ -9,6 +9,12 @@ const styles = StyleSheet.create({
      backgroundColor: '#d8e1fe'
     
   },
+  logo: {
+    width: 200,
+    height: 200,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',

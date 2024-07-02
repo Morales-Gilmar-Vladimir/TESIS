@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView , ActivityIndicator,  Modal, BackHandler} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView , ActivityIndicator,  Modal, BackHandler, Image} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import styles from '../styles/styles';
+import favicon from '../assets/favicon.png';
 
 const Login = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -184,12 +185,13 @@ const Login = ({ navigation }) => {
   };
   
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.scrollViewContent}>
        {loading && ( // Mostrar indicador de carga si loading es true
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#5450b5" />
         </View>
       )}
+      <Image source={favicon} style={styles.logo} />
       <Text style={styles.title}>Inicio de sesión</Text>
       <Text style={styles.label}>Correo electrónico</Text>
       <TextInput

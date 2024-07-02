@@ -263,7 +263,7 @@ const Buscar = ({ buscarPublicaciones, onSearchComplete  }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F3F2FF',
     flexDirection: 'row',
    // position: 'relative',
    // paddingVertical: 5, // Reducir el espaciado vertical
