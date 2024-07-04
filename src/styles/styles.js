@@ -9,6 +9,33 @@ const styles = StyleSheet.create({
      backgroundColor: '#d8e1fe'
     
   },
+  inputpas
+  : {
+    flex: 1,
+    height: '100%',
+    paddingHorizontal: 10,
+    backgroundColor: '#f0f1f1',
+    borderRadius: 5,
+  },
+  passwordContainer: {
+    width: '100%',
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#f0f1f1',
+    borderRadius: 5,
+    backgroundColor: '#f0f1f1',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#5450b5', 
+    textAlign: 'left',
+    fontWeight: 'bold'
+  },
+  iconContainer: {
+    paddingHorizontal: 15,
+  },
   logo: {
     width: 200,
     height: 200,

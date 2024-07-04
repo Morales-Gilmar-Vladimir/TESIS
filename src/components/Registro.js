@@ -3,7 +3,7 @@ import { Alert, Linking, ScrollView, Text, TextInput, TouchableOpacity, View, Ac
 import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import styles from '../styles/styles';
-
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const Registro = ({ navigation }) => {
   const [nombre, setNombre] = useState('');
@@ -46,75 +46,65 @@ const Registro = ({ navigation }) => {
 
   const handleRegister = async () => {
     setLoading(true);
+    
     // Validar campos obligatorios y aceptación de términos
     if (!nombre || !apellido || !email || !fechaNacimiento || !password) {
-      Alert.alert(
-        'Campos incompletos',
-        'Por favor, completa todos los campos para registrarte.',
-        [{ text: 'OK' }]
+      Alert.alert('Campos incompletos', 'Por favor, completa todos los campos para registrarte.', [{ text: 'OK' }]);
+      setLoading(false);
+      return;
+    }
 
-      );
-      setLoading(false); // Detener el indicador de carga
+    // Validar longitud de nombre y apellido
+    if (nombre.length < 3 || nombre.length > 12) {
+      Alert.alert('Nombre inválido', 'El nombre debe tener entre 3 y 12 caracteres.', [{ text: 'OK' }]);
+      setLoading(false);
+      return;
+    }
+
+    if (apellido.length < 3 || apellido.length > 12) {
+      Alert.alert('Apellido inválido', 'El apellido debe tener entre 3 y 12 caracteres.', [{ text: 'OK' }]);
+      setLoading(false);
+      return;
+    }
+
+    // Validar la contraseña
+    if (password.length < 10 || !/[A-Z]/.test(password)) {
+      Alert.alert('Contraseña inválida', 'La contraseña debe tener al menos 10 caracteres y contener al menos una letra mayúscula.', [{ text: 'OK' }]);
+      setLoading(false);
       return;
     }
   
-    if (!terminosAceptados) { // Si los términos no están aceptados
-      Alert.alert(
-        'Términos y condiciones',
-        'Debes aceptar los términos y condiciones para registrarte.',
-        [{ text: 'OK' }]
-      );
-      setLoading(false); // Detener el indicador de carga
+    if (!terminosAceptados) {
+      Alert.alert('Términos y condiciones', 'Debes aceptar los términos y condiciones para registrarte.', [{ text: 'OK' }]);
+      setLoading(false);
       return;
     }
   
     // Validar formato de correo electrónico y dominio conocido
     if (!validateEmail(email)) {
-      Alert.alert(
-        'Formato de correo incorrecto',
-        'Por favor, introduce un correo electrónico válido con un dominio conocido (ej. gmail.com o hotmail.com).',
-        [{ text: 'OK' }]
-      );
-
-      setLoading(false); // Detener el indicador de carga
+      Alert.alert('Formato de correo incorrecto', 'Por favor, introduce un correo electrónico válido con un dominio conocido (ej. gmail.com o hotmail.com).', [{ text: 'OK' }]);
+      setLoading(false);
       return;
     }
 
-      // Validar que la fecha de nacimiento sea válida en términos de calendario
-      if (!isValidCalendarDate(fechaNacimiento)) {
-        Alert.alert(
-          'Formato de fecha incorrecto',
-          'Por favor, introduce una fecha de nacimiento válida en el formato AAAA/MM/DD.',
-          [{ text: 'OK' }]
-        );
+    // Validar que la fecha de nacimiento sea válida en términos de calendario
+    if (!isValidCalendarDate(fechaNacimiento)) {
+      Alert.alert('Formato de fecha incorrecto', 'Por favor, introduce una fecha de nacimiento válida en el formato AAAA/MM/DD.', [{ text: 'OK' }]);
+      setLoading(false);
+      return;
+    }
 
-        setLoading(false); // Detener el indicador de carga
-        return;
-      }
-      // Validar que la fecha de nacimiento cumpla con el límite de edad
-      const fechaLimite = new Date('2008-01-01');
-      const fechaNac = new Date(fechaNacimiento);
-      if (fechaNac >= fechaLimite) {
-        Alert.alert(
-          'Edad mínima requerida',
-          'Lo sentimos, la edad mínima para registrarse en nuestra aplicación es de 16 años.',
-          [{ text: 'OK' }]
-        );
-
-        setLoading(false); // Detener el indicador de carga
-        return;
-      }
+    const fechaLimite = new Date('2008-01-01');
+    const fechaNac = new Date(fechaNacimiento);
+    if (fechaNac >= fechaLimite) {
+      Alert.alert('Edad mínima requerida', 'Lo sentimos, la edad mínima para registrarse en nuestra aplicación es de 16 años.', [{ text: 'OK' }]);
+      setLoading(false);
+      return;
+    }
   
     try {
-      // Realizar la solicitud POST para el registro
       const url = 'https://ropdat.onrender.com/api/register';
-      const respuesta = await axios.post(url, {
-        nombre,
-        apellido,
-        email,
-        fechaNacimiento,
-        password,
-      });
+      const respuesta = await axios.post(url, { nombre, apellido, email, fechaNacimiento, password });
       console.log('Respuesta del servidor:', respuesta.data);
       
       setNombre('');
@@ -124,27 +114,14 @@ const Registro = ({ navigation }) => {
       setPassword('');
       setTerminosAceptados(false);
   
-      Alert.alert(
-        'Registro exitoso',
-        'Se ha enviado un correo de confirmación a tu dirección de correo electrónico.',
-        [{ text: 'OK' }]
-      );
+      Alert.alert('Registro exitoso', 'Se ha enviado un correo de confirmación a tu dirección de correo electrónico.', [{ text: 'OK' }]);
     } catch (error) {
       console.error('Error al registrar:', error);
   
-      // Manejar errores específicos, como el correo ya registrado
       if (error.response && error.response.status === 404) {
-        Alert.alert(
-          'Correo ya registrado',
-          'El correo electrónico ingresado ya está registrado en el sistema. Por favor, utiliza otro correo electrónico.',
-          [{ text: 'OK' }]
-        );
+        Alert.alert('Correo ya registrado', 'El correo electrónico ingresado ya está registrado en el sistema. Por favor, utiliza otro correo electrónico.', [{ text: 'OK' }]);
       } else {
-        Alert.alert(
-          'Error al registrar',
-          'Ocurrió un error al procesar tu registro. Por favor, inténtalo nuevamente más tarde.',
-          [{ text: 'OK' }]
-        );
+        Alert.alert('Error al registrar', 'Ocurrió un error al procesar tu registro. Por favor, inténtalo nuevamente más tarde.', [{ text: 'OK' }]);
       }
     }
     setLoading(false);
@@ -193,6 +170,8 @@ const Registro = ({ navigation }) => {
     Linking.openURL(termsUrl);
   };
 
+  const [secureTextEntry, setSecureTextEntry] = useState(true);
+
   return (
     // <View style={styles.container}>
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
@@ -208,8 +187,8 @@ const Registro = ({ navigation }) => {
         style={styles.input}
         placeholder="Nombre"
         value={nombre}
-        onChangeText={(text) => setNombre(text.slice(0, 15))}
-        maxLength={15} // Máximo de 15 caracteres
+        onChangeText={(text) => setNombre(text.slice(0, 12))}
+        maxLength={12} // Máximo de 15 caracteres
         multiline={false} // No permite saltos de línea
       />
       <Text style={styles.label}>Apellido</Text>
@@ -217,8 +196,8 @@ const Registro = ({ navigation }) => {
         style={styles.input}
         placeholder="Apellido"
         value={apellido}
-        onChangeText={(text) => setApellido(text.slice(0, 15))}
-                maxLength={15} // Máximo de 15 caracteres
+        onChangeText={(text) => setApellido(text.slice(0, 12))}
+                maxLength={12} // Máximo de 15 caracteres
                 multiline={false} // No permite saltos de línea
       />
       <Text style={styles.label}>Correo electrónico</Text>
@@ -238,13 +217,26 @@ const Registro = ({ navigation }) => {
         maxLength={10}
       />
       <Text style={styles.label}>Contraseña</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Contraseña"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={styles.inputpas}
+          placeholder="Contraseña"
+          secureTextEntry={secureTextEntry}
+          value={password}
+          onChangeText={setPassword}
+        />
+        <TouchableOpacity
+          style={styles.iconContainer}
+          onPress={() => setSecureTextEntry(!secureTextEntry)}
+        >
+          <Icon
+            name={secureTextEntry ? 'visibility' : 'visibility-off'}
+            size={20}
+            color="gray"
+          />
+        </TouchableOpacity>
+      </View>
+      
       <View style={styles.checkboxContainer}>
         <TouchableOpacity onPress={() => setTerminosAceptados(!terminosAceptados)}>
           <View style={styles.checkbox}>

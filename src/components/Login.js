@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import styles from '../styles/styles';
 import favicon from '../assets/favicon.png';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const Login = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -184,6 +185,7 @@ const Login = ({ navigation }) => {
     navigation.navigate('Recuperar_Contraseña');
   };
   
+  const [secureTextEntry, setSecureTextEntry] = useState(true);
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
        {loading && ( // Mostrar indicador de carga si loading es true
@@ -201,13 +203,33 @@ const Login = ({ navigation }) => {
         onChangeText={setEmail}
       />
       <Text style={styles.label}>Contraseña</Text>
-      <TextInput
+      {/* <TextInput
         style={styles.input}
         placeholder="Contraseña"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
-      />
+      /> */}
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={styles.inputpas}
+          placeholder="Contraseña"
+          secureTextEntry={secureTextEntry}
+          value={password}
+          onChangeText={setPassword}
+        />
+        <TouchableOpacity
+          style={styles.iconContainer}
+          onPress={() => setSecureTextEntry(!secureTextEntry)}
+        >
+          <Icon
+            name={secureTextEntry ? 'visibility' : 'visibility-off'}
+            size={20}
+            color="gray"
+          />
+        </TouchableOpacity>
+      </View>
+
       {error && <Text style={[styles.errorText, { marginTop: 1 }]}>{error}</Text>}
       
       <TouchableOpacity style={[styles.button, { marginTop: 10 }]} onPress={handleLoginAndVerify}>
