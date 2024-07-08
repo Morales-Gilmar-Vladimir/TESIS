@@ -5,6 +5,7 @@ import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from '@react-navigation/native';
+import Icon2 from 'react-native-vector-icons/MaterialIcons';
 
 const ProfileScreen = ({ navigation }) => {
   const [userData, setUserData] = useState(null);
@@ -445,7 +446,7 @@ const handleChangePassword = async () => {
   const passwordRegex = /^(?=.*[A-Z]).{10,}$/;
   
   if (newPassword !== confirmNewPassword) {
-    Alert.alert("Error", "Las nuevas contraseñas no coinciden");
+    Alert.alert("Error", "Las contraseñas no coinciden");
     return;
   }
 
@@ -495,7 +496,9 @@ const handleChangePassword = async () => {
   setLoading(false);
 };
 
-
+const [secureTextEntry, setSecureTextEntry] = useState(true);
+const [secureTextEntryCurrent, setSecureTextEntryCurrent] = useState(true);
+const [secureTextEntryConfirm, setSecureTextEntryConfirm] = useState(true);
 
 return (
   <View style={styles.container}>
@@ -665,7 +668,7 @@ return (
               multiline={false}
             />
             <TextInput
-              style={styles.input}
+              style={styles.inputdes }
               placeholder="Descripción"
               value={descripcion}
               onChangeText={handleDescripcionChange}
@@ -680,27 +683,66 @@ return (
             {/* Sección para actualizar la contraseña */}
             <View style={styles.editProfileContainer}>
               <Text style={styles.editProfileTitle}>Actualizar Contraseña</Text>
+            <View style={styles.passwordContainer}>
               <TextInput
-                style={styles.input}
+                style={styles.inputpas}
                 placeholder="Contraseña Actual"
-                secureTextEntry={true}
+                secureTextEntry={secureTextEntryCurrent}
                 value={currentPassword}
                 onChangeText={setCurrentPassword}
               />
-              <TextInput
-                style={styles.input}
-                placeholder="Nueva Contraseña"
-                secureTextEntry={true}
-                value={newPassword}
-                onChangeText={setNewPassword}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Confirmar Nueva Contraseña"
-                secureTextEntry={true}
-                value={confirmNewPassword}
-                onChangeText={setConfirmNewPassword}
-              />
+              <TouchableOpacity
+                style={styles.iconContainer}
+                onPress={() => setSecureTextEntryCurrent(!secureTextEntryCurrent)}
+              >
+                <Icon2
+                  name={secureTextEntryCurrent ? 'visibility' : 'visibility-off'}
+                  size={20}
+                  color="gray"
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={{ height: 5 }} />
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={styles.inputpas}
+                  placeholder="Nueva Contraseña"
+                  secureTextEntry={secureTextEntry}
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                />
+                <TouchableOpacity
+                  style={styles.iconContainer}
+                  onPress={() => setSecureTextEntry(!secureTextEntry)}
+                >
+                  <Icon2
+                    name={secureTextEntry ? 'visibility' : 'visibility-off'}
+                    size={20}
+                    color="gray"
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={{ height: 5 }} />
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={styles.inputpas}
+                  placeholder="Confirmar Nueva Contraseña"
+                  secureTextEntry={secureTextEntryConfirm}
+                  value={confirmNewPassword}
+                  onChangeText={setConfirmNewPassword}
+                />
+                <TouchableOpacity
+                  style={styles.iconContainer}
+                  onPress={() => setSecureTextEntryConfirm(!secureTextEntryConfirm)}
+                >
+                  <Icon2
+                    name={secureTextEntryConfirm ? 'visibility' : 'visibility-off'}
+                    size={20}
+                    color="gray"
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={{ height: 10 }} />
               <TouchableOpacity style={styles.saveButton} onPress={handleChangePassword}>
                 <Text style={styles.saveButtonText}>Actualizar Contraseña</Text>
               </TouchableOpacity>
@@ -797,6 +839,33 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F3F2FF',
   },
+  iconContainer: {
+    paddingHorizontal: 15,
+  },
+  inputpas
+  : {
+    flex: 1,
+    height: '100%',
+    paddingHorizontal: 10,
+    backgroundColor: '#f0f1f1',
+    borderRadius: 5,
+  },
+  passwordContainer: {
+    width: '150%',
+    height: 48,
+    borderWidth: 1,
+    borderColor: '#f0f1f1',
+    borderRadius: 5,
+    backgroundColor: '#f0f1f1',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#5450b5', 
+    textAlign: 'left',
+    fontWeight: 'bold'
+  },
   loadingContainer: {
     position: 'absolute',
     top: 0,
@@ -839,17 +908,30 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlignVertical: 'center', // Alinea verticalmente en el centro
   },
-  saveButton: {
-    backgroundColor: '#d8e1fe',
-    padding: 10,
-    borderRadius: 5,
+  inputdes: {
     width: '100%',
-    alignItems: 'center',
+    height: '8%',
+    borderColor: '#f0f1f1',
+    backgroundColor: '#f0f1f1',
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 5,
+    marginBottom: 10,
+    textAlignVertical: 'center', // Alinea verticalmente en el centro
+  },
+  saveButton: {
+      width: '100%',
+      height: 50,
+      backgroundColor: '#5450b5',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 5,
   },
   saveButtonText: {
-    color: '#5450b5',
-    fontSize: 18,
-    fontWeight: 'bold'
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   profileContainer: {
     paddingBottom: 20,
@@ -1016,6 +1098,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    textAlign: 'center',
   },
   postInfoContainer: {
     backgroundColor: '#f0f1f1',

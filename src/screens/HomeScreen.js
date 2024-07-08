@@ -637,7 +637,8 @@ useEffect(() => {
         visible={reporteModalVisible}
         onRequestClose={handleReporteClose}
       >
-        <View style={styles.modalContainer}>
+        <View style={styles.modalContainerrep}>
+          
                 <Text style={styles.reportModalTitle}>Reportar Publicación</Text>
                
                 <View style={styles.pickerContainer}>
@@ -660,14 +661,17 @@ useEffect(() => {
                   style={styles.input}
                   placeholder="Detalle"
                   value={detalle}
-                  onChangeText={text => setDetalle(text.replace(/\n/g, '').slice(0, 70))}
-                  maxLength={70}
+                  onChangeText={text => setDetalle(text.replace(/\n/g, '').slice(0, 75))}
+                  maxLength={75}
                   multiline={false}
                 />
 
                    <TouchableOpacity onPress={handleReportSubmit}>
                     <Text style={styles.submitButton}>Enviar Reporte</Text>
                   </TouchableOpacity>
+
+                  <View style={{ height: 15}} />
+
                   <TouchableOpacity onPress={handleReporteClose}>
                     <Text style={styles.closeButton}>Cancelar</Text>
                   </TouchableOpacity>
@@ -699,9 +703,9 @@ const styles = StyleSheet.create({
   },
   imageDescription: {
     fontSize: 16,
-    alignItems: 'center', // Alinea el contenido en el centro horizontalmente
-    textAlign: 'center', // Alinea el texto horizontalmente en el centro
-    textAlignVertical: 'center', // Alinea el texto verticalmente en el centro
+    alignItems: 'center', 
+    textAlign: 'center', 
+    textAlignVertical: 'center', 
    color: "black"
   },  
   Description: {
@@ -715,31 +719,29 @@ const styles = StyleSheet.create({
   clearButton: {
     position: 'absolute',
     top: 10,
-    left: 10, // Alinear a la izquierda
+    left: 10, 
     zIndex: 1,
-    //padding: 1,
-    //backgroundColor: '#d8e1fe',
+
     alignItems: 'center',
     color: '#5450b5',
-   // borderRadius: 10, // Añadir bordes
-    //borderWidth: 1, // Añadir bordes
-    //borderColor: '#d8e1fe', // Añadir bordes
+
   },
   picker: {
-    height: 50, // Aumentar la altura
+    height: 50, 
     width: '100%',
     backgroundColor: '#f0f1f1',
     alignItems: 'center',
     justifyContent: 'center', 
     color: '#7c7c7c',
     fontWeight: 'bold',
-    fontSize: 18, // Aumentar el tamaño de fuente
+    fontSize: 18,
   },
   reportModalTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
-    color: "white"
+    marginBottom: 20,
+    color: '#d8e1fe',
+    textAlign: 'center',
   },
   buttonText: {
     fontSize: 15,
@@ -755,8 +757,8 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       borderColor: '#ccc',
       overflow: 'hidden',
-      alignItems: 'center', // Centra horizontalmente
-      justifyContent: 'center', // Centra verticalmente
+      alignItems: 'center', 
+      justifyContent: 'center', 
       marginBottom: 5,
       color: '#7c7c7c',
       fontWeight: 'bold'
@@ -773,7 +775,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 200, // Altura fija para el contenedor del filtro
+    height: 200, 
     backgroundColor: 'white',
     zIndex: 2,
     elevation: 5, // Añade sombra
@@ -840,17 +842,35 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginLeft: 10,
   },
-  modalContainer: {
+  modalContainerrep: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    width: '80%',
+    height: '40%',  // Ajusta la altura del recuadro modal
+    borderRadius: 10,
+    alignSelf: 'center',
+    marginTop: '60%', // Centra verticalmente el recuadro modal
+  },
+    modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   closeButton: {
-    color: 'white',
-    fontSize: 18,
-    marginBottom: 20,
-    marginTop: 20,
+    color: 'white', // Color del texto
+    fontSize: 16,   // Tamaño de la fuente
+    fontWeight: 'bold', // Grosor de la fuente
+    paddingVertical: 10, // Espaciado vertical dentro del texto
+    paddingHorizontal: 20, // Espaciado horizontal dentro del texto
+    borderRadius: 10, // Radio de borde para redondear las esquinas
+    width: '100%',
+    height: 50,
+    backgroundColor: '#5450b5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
   },
   XButton: {
     position: 'absolute',
@@ -928,7 +948,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   input: {
-    width: 360, // Tamaño fijo para el ancho del input
+    width: 290, // Tamaño fijo para el ancho del input
     height: 50, // Tamaño fijo para la altura del input
     borderColor: '#f0f1f1',
     borderWidth: 1,
