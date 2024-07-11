@@ -535,9 +535,11 @@ return (
                     </>
                   )}
                   {selectedImageUri && (
-                    <TouchableOpacity style={styles.confirmButton} onPress={confirmProfileImage}>
-                      <Text style={styles.confirmButtonText}>Confirmar como foto de perfil</Text>
-                    </TouchableOpacity>
+                    <View style={styles.profilePictureC}>
+                     <TouchableOpacity style={styles.confirmButton} onPress={confirmProfileImage}>
+                       <Text style={styles.confirmButtonText}>Confirmar como foto de perfil</Text>
+                     </TouchableOpacity>
+                     </View>
                   )}
                 </>
               )}
@@ -757,8 +759,6 @@ return (
       </View>
     </Modal>
 
-
-
     <Modal
       animationType="slide"
       transparent={true}
@@ -964,7 +964,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     justifyContent: 'center',
     flexDirection: 'row',
-   // backgroundColor: '#d8e1fe'
+   //backgroundColor: '#d8e1fe'
   },
   profilePicture: {
     width: 150,
@@ -972,7 +972,20 @@ const styles = StyleSheet.create({
     borderRadius: 75,
     flexDirection: 'row', // Asegura que el contenido esté en una fila
     justifyContent: 'center', // Alinea el contenido en el centro horizontalmente
+    //alignItems: 'center',
+    //backgroundColor: 'blue'
   },
+  profilePictureC: {
+    width: 50,
+    height: 50,
+    borderRadius: 25, // Ajusta el radio para que sea un círculo
+    justifyContent: 'center', // Alinea el contenido en el centro horizontalmente
+    alignItems: 'center', // Alinea el contenido en el centro verticalmente
+    //backgroundColor: 'blue', // Color de fondo opcional, puede ser transparente si lo deseas
+    alignSelf: 'center', // Centra el contenedor en el eje horizontal
+    marginBottom: 10, // Ajusta el margen inferior según sea necesario
+  },
+  
   userDataContainer: {
     marginBottom: 20,
     alignItems: 'center',
@@ -1030,20 +1043,20 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     backgroundColor: '#d8e1fe',
-    padding: 10,
     borderRadius: 5,
     marginTop: 10,
     alignItems: 'center',
-    color: '#5450b5',
-    alignItems: 'center', // Alinea el contenido en el centro horizontalmente
-    justifyContent: 'center', 
+    justifyContent: 'center',
+    width: 300, // Ancho deseado
+    height: 45, // Altura deseada
   },
   confirmButtonText: {
     color: '#5450b5',
     fontSize: 16,
     fontWeight: 'bold',
-    alignItems: 'center', // Alinea el contenido en el centro horizontalmente
-    justifyContent: 'center', 
+    alignItems: 'center',
+    justifyContent: 'center',
+    lineHeight: 40, // Ajusta la altura de línea para centrar verticalmente el texto
   },
   fixedButtonsContainer: {
     position: 'absolute',
